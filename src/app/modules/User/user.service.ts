@@ -16,10 +16,10 @@ import { searchableFields } from "./user.constant";
 import { IGenericResponse } from "../../../interfaces/common";
 import { IUploadedFile } from "../../../interfaces/file";
 import { uploadFile } from "../../../helpars/fileUploader";
-import e, { Request } from "express";
+import { Request } from "express";
 import { getDateRange } from "../../../helpars/filterByDate";
-import emailSender from "../../../helpars/emailSender";
-import { createOtpEmailTemplate } from "../../../utils/createOtpEmailTemplate";
+// import emailSender from "../../../helpars/emailSender";
+// import { createOtpEmailTemplate } from "../../../utils/createOtpEmailTemplate";
 
 // create user
 const createUser = async (payload: any) => {
@@ -40,31 +40,40 @@ const createUser = async (payload: any) => {
     data: {
       ...payload,
       password: hashedPassword,
-      status: UserStatus.INACTIVE,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      profileImage: true,
+      role: true,
+      status: true,
     },
   });
 
   // generate OTP
-  const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
-  // 5 minutes
-  const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+  // const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
+  // // 5 minutes
+  // const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
-  // prepare email html
-  const html = createOtpEmailTemplate(randomOtp);
+  // // prepare email html
+  // const html = createOtpEmailTemplate(randomOtp);
 
-  // send email
-  await emailSender("OTP Verification", user.email, html);
+  // // send email
+  // await emailSender("OTP Verification", user.email, html);
 
-  // update user with OTP + expiry
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { otp: randomOtp, otpExpiry },
-  });
+  // // update user with OTP + expiry
+  // await prisma.user.update({
+  //   where: { id: user.id },
+  //   data: { otp: randomOtp, otpExpiry },
+  // });
 
-  return {
-    message: "OTP sent to your email",
-    email: user.email,
-  };
+  // return {
+  //   message: "OTP sent to your email",
+  //   email: user.email,
+  // };
+
+  return user;
 };
 
 // create role for supper admin
@@ -764,9 +773,6 @@ const updateUser = async (
       fcmToken: true,
       status: true,
       age: true,
-      profession: true,
-      gender: true,
-      companyName: true,
       createdAt: true,
       updatedAt: true,
     },

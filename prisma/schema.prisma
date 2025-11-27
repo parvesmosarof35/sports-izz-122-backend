@@ -100,9 +100,7 @@ model User {
   fcmToken        String?    @default("")
   age             Int?
   dateOfBirth     DateTime?
-  profession      String?
   gender          String?
-  companyName     String?
   isEmailVerified Boolean    @default(false)
   isPhoneVerified Boolean    @default(false)
 
@@ -124,9 +122,7 @@ model User {
   emailNotification   Boolean @default(true)
 
   isHotel      Boolean @default(false)
-  isSecurity   Boolean @default(false)
-  isCar        Boolean @default(false)
-  isAttraction Boolean @default(false)
+
 
   otp        String?
   otpExpiry  DateTime?
