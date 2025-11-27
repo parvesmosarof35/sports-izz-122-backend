@@ -3,7 +3,6 @@ import { WebSocketServer, WebSocket } from "ws";
 import app from "./app";
 import config from "./config";
 import prisma from "./shared/prisma";
-import { changeExpiryBookingStatus } from "./utils/cronFn/changeExpiryBookingStatus";
 
 // ---------- WebSocket state ----------
 type channelName = string;
@@ -59,7 +58,6 @@ async function main() {
   });
 
   // start cron jobs
-  changeExpiryBookingStatus();
 
   wss = new WebSocketServer({ server });
   installHeartbeat(wss);

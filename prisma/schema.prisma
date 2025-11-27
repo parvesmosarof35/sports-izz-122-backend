@@ -136,26 +136,17 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relationships
-  payment            Payment[]
-  notifications      Notifications[]
-  hotel              Hotel[]
-  room               Room[]
-  review             Review[]
-  hotel_bookings     Hotel_Booking[]
-  favorite           Favorite[]
-  security_Protocol  Security_Protocol[]
-  security_Guard     Security_Guard[]
-  security_Booking   Security_Booking[]
-  car_Rental         Car_Rental[]
-  car                Car[]
-  car_Booking        Car_Booking[]
-  attraction         Attraction[]
-  appeal             Appeal[]
-  attraction_Booking Attraction_Booking[]
-  sender             Channel[]            @relation("ChannelPerson1")
-  receiver           Channel[]            @relation("ChannelPerson2")
-  messages           Message[]            @relation("sentMessages")
-  support            Support[]
+  payment        Payment[]
+  notifications  Notifications[]
+  hotel          Hotel[]
+  room           Room[]
+  review         Review[]
+  hotel_bookings Hotel_Booking[]
+  favorite       Favorite[]
+  sender         Channel[]       @relation("ChannelPerson1")
+  receiver       Channel[]       @relation("ChannelPerson2")
+  messages       Message[]       @relation("sentMessages")
+  support        Support[]
 
   @@map("users")
 }
@@ -291,351 +282,6 @@ model Hotel_Booking {
   @@map("hotel_bookings")
 }
 
-model Security_Protocol {
-  id                          String   @id @default(auto()) @map("_id") @db.ObjectId
-  securityBusinessName        String   @unique
-  securityName                String
-  securityBusinessType        String
-  securityRegNum              String
-  securityRegDate             String
-  securityPhone               String
-  securityEmail               String
-  businessLogo                String   @default("https://i.ibb.co/zWxSgQL8/download.png")
-  securityTagline             String?
-  securityProtocolDescription String?
-  securityProtocolType        String
-  securityBookingCondition    String
-  securityCancelationPolicy   String
-  securityDocs                String[] // 5 image
-  hotelLate                   Float?
-  hotelLong                   Float?
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
-
-  // relationships
-  user             User               @relation(fields: [partnerId], references: [id])
-  partnerId        String             @db.ObjectId
-  security_Booking Security_Booking[]
-  review           Review[]
-  security_Guard   Security_Guard[]
-
-  @@map("security_protocols")
-}
-
-model Security_Guard {
-  id                       String             @id @default(auto()) @map("_id") @db.ObjectId
-  securityGuardName        String
-  securityAddress          String
-  securityPostalCode       String
-  securityDistrict         String
-  securityCity             String
-  securityCountry          String
-  securityGuardDescription String
-  securityImages           String[] // 10 image
-  securityServicesOffered  String[]
-  experience               Int
-  availability             String
-  languages                String[]
-  certification            String
-  securityRating           String
-  securityPriceDay         Float
-  category                 String?
-  discount                 Float?
-  isBooked                 EveryServiceStatus @default(AVAILABLE)
-  hiredCount               Int                @default(0)
-  vat                      Float              @default(0)
-  securityReviewCount      Int                @default(0)
-  securityBookingAbleDays  String[]
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
-
-  // relationships
-  partnerId        String?            @db.ObjectId
-  user             User?              @relation(fields: [partnerId], references: [id])
-  securityId       String?            @db.ObjectId
-  security         Security_Protocol? @relation(fields: [securityId], references: [id])
-  security_Booking Security_Booking[]
-  review           Review[]
-
-  @@map("security_guards")
-}
-
-model Security_Booking {
-  id                     String        @id @default(auto()) @map("_id") @db.ObjectId
-  checkoutSessionId      String?
-  number_of_security     Int
-  securityBookedFromDate String
-  securityBookedToDate   String
-  totalPrice             Float
-  bookingStatus          BookingStatus @default(PENDING)
-  category               String
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
-
-  // relationships
-  partnerId        String             @db.ObjectId
-  security         Security_Protocol? @relation(fields: [securityId], references: [id])
-  securityId       String?            @db.ObjectId
-  user             User?              @relation(fields: [userId], references: [id])
-  userId           String?            @db.ObjectId
-  payment          Payment[]
-  security_Guard   Security_Guard?    @relation(fields: [security_GuardId], references: [id])
-  security_GuardId String?            @db.ObjectId
-
-  @@map("security_bookings")
-}
-
-model Car_Rental {
-  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
-  carBusinessName      String   @unique
-  carName              String
-  carBusinessType      String
-  carRegNum            String
-  carRegDate           String
-  carPhone             String
-  carEmail             String
-  businessLogo         String   @default("https://i.ibb.co/zWxSgQL8/download.png")
-  carTagline           String?
-  carRentalDescription String?
-  carBookingCondition  String
-  carCancelationPolicy String
-  carDocs              String[] // 5 image
-  carLate              Float?
-  carLong              Float?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  // relationships
-  user        User          @relation(fields: [partnerId], references: [id])
-  partnerId   String        @db.ObjectId
-  car_Booking Car_Booking[]
-  review      Review[]
-  car         Car[]
-
-  @@map("car_rentals")
-}
-
-model Car {
-  id                 String             @id @default(auto()) @map("_id") @db.ObjectId
-  carAddress         String
-  carPostalCode      String
-  carDistrict        String
-  carCity            String
-  carCountry         String
-  carDescription     String
-  carImages          String[] // 5 image
-  carServicesOffered String[]
-  carType            String
-  carSeats           String
-  carOilType         String // fuel type
-  carEngineType      String
-  carTransmission    String // transmission
-  carPower           String
-  carDrivetrain      String
-  carMileage         String // mileage
-  carModel           String
-  carCapacity        String
-  carColor           String
-  fuelType           String
-  gearType           String
-  carRating          String
-  carPriceDay        Float
-  category           String?
-  discount           Float?
-  isBooked           EveryServiceStatus @default(AVAILABLE)
-  vat                Float              @default(0)
-  carReviewCount     Int                @default(0)
-  carBookingAbleDays String[]
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-
-  // relationships
-  partnerId    String?       @db.ObjectId
-  user         User?         @relation(fields: [partnerId], references: [id])
-  car_Rental   Car_Rental?   @relation(fields: [car_RentalId], references: [id])
-  car_RentalId String?       @db.ObjectId
-  car_Booking  Car_Booking[]
-  review       Review[]
-
-  @@map("cars")
-}
-
-model PromoCode {
-  id            String       @id @default(auto()) @map("_id") @db.ObjectId
-  code          String       @unique
-  discountType  DiscountType @default(PERCENTAGE) // PERCENTAGE | FLAT
-  discountValue Float
-
-  validFrom     DateTime
-  validTo       DateTime
-  usageLimit    Int
-  usedCount     Int      @default(0)
-  perUserLimit  Int
-  minimumAmount Float? // minimum order amount
-
-  status PromoStatus @default(ACTIVE)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // relationships
-  carBookings Car_Booking[]
-
-  @@map("promo_codes")
-}
-
-model Car_Booking {
-  id                String        @id @default(auto()) @map("_id") @db.ObjectId
-  checkoutSessionId String?
-  carBookedFromDate String
-  carBookedToDate   String
-  promo_code        String?
-  totalPrice        Float
-  bookingStatus     BookingStatus @default(PENDING)
-  category          String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // relationships
-  partnerId    String      @db.ObjectId
-  car_Rental   Car_Rental? @relation(fields: [car_RentalId], references: [id])
-  car_RentalId String?     @db.ObjectId
-  user         User?       @relation(fields: [userId], references: [id])
-  userId       String?     @db.ObjectId
-  promoCode    PromoCode?  @relation(fields: [promoCodeId], references: [id])
-  promoCodeId  String?     @db.ObjectId
-  payment      Payment[]
-  car          Car?        @relation(fields: [carId], references: [id])
-  carId        String?     @db.ObjectId
-
-  @@map("car_bookings")
-}
-
-model Attraction {
-  id                            String   @id @default(auto()) @map("_id") @db.ObjectId
-  attractionBusinessName        String   @unique
-  attractionName                String
-  attractionBusinessType        String
-  attractionRegNum              String
-  attractionRegDate             String
-  attractionPhone               String
-  attractionEmail               String
-  businessLogo                  String   @default("https://i.ibb.co/zWxSgQL8/download.png")
-  attractionBusinessTagline     String
-  attractionBusinessDescription String
-  attractionBookingCondition    String
-  attractionCancelationPolicy   String
-  attractionDocs                String[] // 5 image
-  hotelLate                     Float?
-  hotelLong                     Float?
-  createdAt                     DateTime @default(now())
-  updatedAt                     DateTime @updatedAt
-
-  // relationships
-  user               User?                @relation(fields: [partnerId], references: [id])
-  partnerId          String?              @db.ObjectId
-  review             Review[]
-  appeal             Appeal[]
-  attraction_Booking Attraction_Booking[]
-
-  @@map("attractions")
-}
-
-model Appeal {
-  id                        String             @id @default(auto()) @map("_id") @db.ObjectId
-  attractionDestinationType String
-  attractionDescription     String
-  attractionAddress         String
-  attractionCity            String
-  attractionPostalCode      String
-  attractionDistrict        String
-  attractionCountry         String
-  attractionImages          String[] // 5 image
-  attractionServicesOffered String[]
-  attractionFreeWifi        Boolean
-  attractionFreeParking     Boolean
-  attractionKitchen         Boolean
-  attractionTv              Boolean
-  attractionAirConditioning Boolean
-  attractionPool            Boolean
-  attractionRating          String
-  attractionAdultPrice      Float
-  attractionChildPrice      Float
-  category                  String?
-  discount                  Float?
-  isBooked                  EveryServiceStatus @default(AVAILABLE)
-  vat                       Float              @default(0)
-  attractionReviewCount     Int                @default(0)
-  createdAt                 DateTime           @default(now())
-  updatedAt                 DateTime           @updatedAt
-
-  // relationships
-  user               User?                @relation(fields: [partnerId], references: [id])
-  partnerId          String?              @db.ObjectId
-  attraction         Attraction?          @relation(fields: [attractionId], references: [id])
-  attractionId       String?              @db.ObjectId
-  attraction_Booking Attraction_Booking[]
-  review             Review[]
-  attractionSchedule AttractionSchedule[]
-  scheduleSlot       ScheduleSlot[]
-
-  @@map("appeals")
-}
-
-model AttractionSchedule {
-  id  String @id @default(auto()) @map("_id") @db.ObjectId
-  day String
-  // date String
-
-  // relationships
-  appealId String?        @db.ObjectId
-  appeal   Appeal?        @relation(fields: [appealId], references: [id])
-  slots    ScheduleSlot[]
-
-  @@map("attraction_schedules")
-}
-
-model ScheduleSlot {
-  id   String @id @default(auto()) @map("_id") @db.ObjectId
-  from String // "10:00:00"
-  to   String // "12:00:00"
-
-  // relationships
-  appealId             String?             @db.ObjectId
-  appeal               Appeal?             @relation(fields: [appealId], references: [id])
-  attractionScheduleId String?             @db.ObjectId
-  weeklySchedule       AttractionSchedule? @relation(fields: [attractionScheduleId], references: [id])
-
-  @@map("schedule_slots")
-}
-
-model Attraction_Booking {
-  id                String        @id @default(auto()) @map("_id") @db.ObjectId
-  checkoutSessionId String?
-  totalPrice        Float
-  bookingStatus     BookingStatus @default(PENDING)
-  adults            Int
-  children          Int
-  date              String
-  day               String
-  timeSlot          Json // { "from": "10:00:00", "to": "12:00:00" }
-  category          String
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // relationships
-  partnerId    String      @db.ObjectId
-  attractionId String?     @db.ObjectId
-  attraction   Attraction? @relation(fields: [attractionId], references: [id])
-  appealId     String?     @db.ObjectId
-  appeal       Appeal?     @relation(fields: [appealId], references: [id])
-  user         User?       @relation(fields: [userId], references: [id])
-  userId       String?     @db.ObjectId
-  payment      Payment[]
-
-  @@map("attraction_bookings")
-}
-
 model Review {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   rating     Float
@@ -645,22 +291,10 @@ model Review {
   updatedAt  DateTime @updatedAt
 
   // relationships
-  user             User               @relation(fields: [userId], references: [id])
-  userId           String             @db.ObjectId
-  security         Security_Protocol? @relation(fields: [securityId], references: [id])
-  securityId       String?            @db.ObjectId
-  car_Rental       Car_Rental?        @relation(fields: [car_RentalId], references: [id])
-  car_RentalId     String?            @db.ObjectId
-  attraction       Attraction?        @relation(fields: [attractionId], references: [id])
-  attractionId     String?            @db.ObjectId
-  room             Room?              @relation(fields: [roomId], references: [id])
-  roomId           String?            @db.ObjectId
-  security_Guard   Security_Guard?    @relation(fields: [security_GuardId], references: [id])
-  security_GuardId String?            @db.ObjectId
-  Car              Car?               @relation(fields: [carId], references: [id])
-  carId            String?            @db.ObjectId
-  appeal           Appeal?            @relation(fields: [appealId], references: [id])
-  appealId         String?            @db.ObjectId
+  user   User    @relation(fields: [userId], references: [id])
+  userId String  @db.ObjectId
+  room   Room?   @relation(fields: [roomId], references: [id])
+  roomId String? @db.ObjectId
 
   @@map("reviews")
 }
@@ -710,7 +344,7 @@ model Faq {
 }
 
 model CustomerContact {
-  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
   email       String
   phone       String
   description String?
@@ -871,16 +505,10 @@ model Payment {
   metadata         Json? // extra(fullName, email, contactNumber, country, description etc).
 
   // Relations
-  user                 User                @relation(fields: [userId], references: [id])
-  userId               String              @db.ObjectId
-  hotel_booking        Hotel_Booking?      @relation(fields: [hotel_bookingId], references: [id])
-  hotel_bookingId      String?             @db.ObjectId
-  security_booking     Security_Booking?   @relation(fields: [security_bookingId], references: [id])
-  security_bookingId   String?             @db.ObjectId
-  car_booking          Car_Booking?        @relation(fields: [car_bookingId], references: [id])
-  car_bookingId        String?             @db.ObjectId
-  attraction_booking   Attraction_Booking? @relation(fields: [attraction_bookingId], references: [id])
-  attraction_bookingId String?             @db.ObjectId
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @db.ObjectId
+  hotel_booking   Hotel_Booking? @relation(fields: [hotel_bookingId], references: [id])
+  hotel_bookingId String?        @db.ObjectId
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

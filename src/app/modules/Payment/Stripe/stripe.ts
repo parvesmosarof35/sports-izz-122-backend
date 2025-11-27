@@ -19,7 +19,7 @@ export const mapStripeStatusToPaymentStatus = (
   }
 };
 
-export type ServiceType = "CAR" | "HOTEL" | "SECURITY" | "ATTRACTION";
+export type ServiceType = "HOTEL";
 
 export const serviceConfig: Record<
   ServiceType,
@@ -31,13 +31,6 @@ export const serviceConfig: Record<
     partnerIdField: string;
   }
 > = {
-  CAR: {
-    bookingModel: prisma.car_Booking,
-    serviceModel: prisma.car,
-    serviceTypeField: "car_bookingId",
-    nameField: "carName",
-    partnerIdField: "partnerId",
-  },
   HOTEL: {
     bookingModel: prisma.hotel_Booking,
     serviceModel: prisma.room,
@@ -45,84 +38,70 @@ export const serviceConfig: Record<
     nameField: "hotelName",
     partnerIdField: "partnerId",
   },
-  SECURITY: {
-    bookingModel: prisma.security_Booking,
-    serviceModel: prisma.security_Guard,
-    serviceTypeField: "security_bookingId",
-    nameField: "securityName",
-    partnerIdField: "partnerId",
-  },
-  ATTRACTION: {
-    bookingModel: prisma.attraction_Booking,
-    serviceModel: prisma.appeal,
-    serviceTypeField: "attraction_bookingId",
-    nameField: "attractionName",
-    partnerIdField: "partnerId",
-  },
 };
 
 export const countryCurrencyMap: Record<string, string> = {
   // -------- USD --------
-  United_States: "usd",       // United States
-  Puerto_Rico: "usd",         // Puerto Rico
-  Guam: "usd",                // Guam
+  United_States: "usd", // United States
+  Puerto_Rico: "usd", // Puerto Rico
+  Guam: "usd", // Guam
   Northern_Mariana_Islands: "usd", // Northern Mariana Islands
-  American_Samoa: "usd",      // American Samoa
+  American_Samoa: "usd", // American Samoa
   US_Virgin_Islands: "usd", // U.S. Virgin Islands
-  Ecuador: "usd",             // Ecuador
-  El_Salvador: "usd",         // El Salvador
-  Panama: "usd",              // Panama
-  East_Timor: "usd",          // Timor-Leste
-  Zimbabwe: "usd",            // Zimbabwe
-  Cambodia: "usd",            // Cambodia
-  Liberia: "usd",             // Liberia
-  Micronesia: "usd",          // Micronesia
-  Marshall_Islands: "usd",    // Marshall Islands
-  Palau: "usd",               // Palau
+  Ecuador: "usd", // Ecuador
+  El_Salvador: "usd", // El Salvador
+  Panama: "usd", // Panama
+  East_Timor: "usd", // Timor-Leste
+  Zimbabwe: "usd", // Zimbabwe
+  Cambodia: "usd", // Cambodia
+  Liberia: "usd", // Liberia
+  Micronesia: "usd", // Micronesia
+  Marshall_Islands: "usd", // Marshall Islands
+  Palau: "usd", // Palau
 
   // -------- EUR --------
-  Austria: "eur",        // Austria
-  Belgium: "eur",        // Belgium
-  Cyprus: "eur",         // Cyprus
-  Estonia: "eur",        // Estonia
-  Finland: "eur",        // Finland
-  France: "eur",         // France
-  Germany: "eur",        // Germany
-  Greece: "eur",         // Greece
-  Ireland: "eur",        // Ireland
-  Italy: "eur",          // Italy
-  Latvia: "eur",         // Latvia
-  Lithuania: "eur",      // Lithuania
-  Luxembourg: "eur",     // Luxembourg
-  Malta: "eur",          // Malta
-  Netherlands: "eur",    // Netherlands
-  Portugal: "eur",       // Portugal
-  Slovakia: "eur",       // Slovakia
-  Slovenia: "eur",       // Slovenia
-  Spain: "eur",          // Spain
+  Austria: "eur", // Austria
+  Belgium: "eur", // Belgium
+  Cyprus: "eur", // Cyprus
+  Estonia: "eur", // Estonia
+  Finland: "eur", // Finland
+  France: "eur", // France
+  Germany: "eur", // Germany
+  Greece: "eur", // Greece
+  Ireland: "eur", // Ireland
+  Italy: "eur", // Italy
+  Latvia: "eur", // Latvia
+  Lithuania: "eur", // Lithuania
+  Luxembourg: "eur", // Luxembourg
+  Malta: "eur", // Malta
+  Netherlands: "eur", // Netherlands
+  Portugal: "eur", // Portugal
+  Slovakia: "eur", // Slovakia
+  Slovenia: "eur", // Slovenia
+  Spain: "eur", // Spain
 
   // -------- GBP --------
-  United_Kingdom: "gbp",       // United Kingdom
-  Isle_of_Man: "gbp",          // Isle of Man
-  Jersey: "gbp",               // Jersey
-  Guernsey: "gbp",             // Guernsey
+  United_Kingdom: "gbp", // United Kingdom
+  Isle_of_Man: "gbp", // Isle of Man
+  Jersey: "gbp", // Jersey
+  Guernsey: "gbp", // Guernsey
 };
 
 export const zeroDecimalCurrencies: Record<string, string> = {
-  "bif": "Burundi Franc (BIF)",
-  "clp": "Chilean Peso (CLP)",
-  "djf": "Djiboutian Franc (DJF)",
-  "gnf": "Guinean Franc (GNF)",
-  "jpy": "Japanese Yen (JPY)",
-  "kmf": "Comorian Franc (KMF)",
-  "krw": "South Korean Won (KRW)",
-  "mga": "Malagasy Ariary (MGA)",
-  "pyg": "Paraguayan Guaraní (PYG)",
-  "rwf": "Rwandan Franc (RWF)",
-  "ugx": "Ugandan Shilling (UGX)",
-  "vnd": "Vietnamese Dong (VND)",
-  "vuv": "Vanuatu Vatu (VUV)",
-  "xaf": "Central African CFA Franc (XAF)",
-  "xof": "West African CFA Franc (XOF)",
-  "xpf": "CFP Franc (XPF)"
+  bif: "Burundi Franc (BIF)",
+  clp: "Chilean Peso (CLP)",
+  djf: "Djiboutian Franc (DJF)",
+  gnf: "Guinean Franc (GNF)",
+  jpy: "Japanese Yen (JPY)",
+  kmf: "Comorian Franc (KMF)",
+  krw: "South Korean Won (KRW)",
+  mga: "Malagasy Ariary (MGA)",
+  pyg: "Paraguayan Guaraní (PYG)",
+  rwf: "Rwandan Franc (RWF)",
+  ugx: "Ugandan Shilling (UGX)",
+  vnd: "Vietnamese Dong (VND)",
+  vuv: "Vanuatu Vatu (VUV)",
+  xaf: "Central African CFA Franc (XAF)",
+  xof: "West African CFA Franc (XOF)",
+  xpf: "CFP Franc (XPF)",
 };

@@ -7,22 +7,13 @@ import { privacyPolicyRoute } from "../modules/Privacy_Policy/policy.route";
 import { hotelRoute } from "../modules/Hotel/hotel.route";
 import { reviewRoute } from "../modules/Review/review.route";
 import { hotelBookingRoute } from "../modules/HotelBooking/hotelBooking.route";
-import { securityProtocolRoute } from "../modules/Security_Protocol/security_protocol.route";
-import { security_bookingRoute } from "../modules/Security_booking/security_booking.route";
-import { carRentalRoutes } from "../modules/Car_Rental/carRental.route";
-import { attractionRoute } from "../modules/Attraction/attraction.route";
-import { attractionBookingRoutes } from "../modules/Attraction_Booking/attraction_booking.route";
-import { promoCodeRoute } from "../modules/Car_booking/Promo_code/promoCode.route";
-import { carBookingRoute } from "../modules/Car_booking/carBooking.route";
 import { notificationsRoute } from "../modules/Notification/notification.route";
 import { settingRoute } from "../modules/Setting/setting.route";
 import { termsConditionRoute } from "../modules/Terms_Condition/terms.route";
-import { contractRoutes } from "../modules/Contracts/contract.route";
 import { messageRoutes } from "../modules/Message/message.route";
 import { phoneRoute } from "../modules/Setting/PhoneNumberVerify/phone.route";
 import { paymentRoutes } from "../modules/Payment/payment.route";
 import { financeRoutes } from "../modules/Finances/finance.route";
-import { statisticsRoutes } from "../modules/Statistics/statistics.route";
 import { supportRoutes } from "../modules/Support/support.route";
 import { faqRoutes } from "../modules/Faq/faq.routre";
 import { humanRightRoute } from "../modules/Human_Rights/humanRight.route";
@@ -54,38 +45,6 @@ const moduleRoutes = [
     route: hotelBookingRoute,
   },
 
-  {
-    path: "/security-protocols",
-    route: securityProtocolRoute,
-  },
-  {
-    path: "/security-booking",
-    route: security_bookingRoute,
-  },
-  {
-    path: "/car-rentals",
-    route: carRentalRoutes,
-  },
-  {
-    path: "/promo-codes",
-    route: promoCodeRoute,
-  },
-  {
-    path: "/car-booking",
-    route: carBookingRoute,
-  },
-  {
-    path: "/attractions",
-    route: attractionRoute,
-  },
-  {
-    path: "/attraction-booking",
-    route: attractionBookingRoutes,
-  },
-  {
-    path: "/contracts",
-    route: contractRoutes,
-  },
   {
     path: "/notifications",
     route: notificationsRoute,
@@ -138,10 +97,7 @@ const moduleRoutes = [
     path: "/finances",
     route: financeRoutes,
   },
-  {
-    path: "/statistics",
-    route: statisticsRoutes,
-  },
+
   {
     path: "/supports",
     route: supportRoutes,

@@ -210,23 +210,6 @@ const createStripePaymentIntent = async (
   if (!user) throw new ApiError(httpStatus.NOT_FOUND, "User not found");
 
   switch (serviceType) {
-    case "CAR":
-      booking = await prisma.car_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(httpStatus.NOT_FOUND, "Car booking not found");
-
-      service = await prisma.car.findUnique({
-        where: { id: booking.carId },
-      });
-      if (!service) throw new ApiError(httpStatus.NOT_FOUND, "Car not found");
-
-      partnerId = service.partnerId;
-      serviceName = service.carName;
-      totalPrice = booking.totalPrice;
-      break;
-
     case "HOTEL":
       booking = await prisma.hotel_Booking.findUnique({
         where: { id: bookingId, userId },
@@ -241,45 +224,6 @@ const createStripePaymentIntent = async (
 
       partnerId = service.partnerId;
       serviceName = service.hotelName;
-      totalPrice = booking.totalPrice;
-      break;
-
-    case "SECURITY":
-      booking = await prisma.security_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(httpStatus.NOT_FOUND, "Security booking not found");
-
-      service = await prisma.security_Guard.findUnique({
-        where: { id: booking.securityId },
-      });
-      if (!service)
-        throw new ApiError(httpStatus.NOT_FOUND, "Security service not found");
-
-      partnerId = service.partnerId;
-      serviceName = service.securityName;
-      totalPrice = booking.totalPrice;
-      break;
-
-    case "ATTRACTION":
-      booking = await prisma.attraction_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(
-          httpStatus.NOT_FOUND,
-          "Attraction booking not found"
-        );
-
-      service = await prisma.appeal.findUnique({
-        where: { id: booking.attractionId },
-      });
-      if (!service)
-        throw new ApiError(httpStatus.NOT_FOUND, "Attraction not found");
-
-      partnerId = service.partnerId!;
-      serviceName = service.attractionName;
       totalPrice = booking.totalPrice;
       break;
 
@@ -326,26 +270,8 @@ const createStripePaymentIntent = async (
 
   // update booking with checkoutSessionId
   switch (serviceType) {
-    case "CAR":
-      await prisma.car_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: paymentIntent.id },
-      });
-      break;
     case "HOTEL":
       await prisma.hotel_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: paymentIntent.id },
-      });
-      break;
-    case "SECURITY":
-      await prisma.security_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: paymentIntent.id },
-      });
-      break;
-    case "ATTRACTION":
-      await prisma.attraction_Booking.update({
         where: { id: booking.id },
         data: { checkoutSessionId: paymentIntent.id },
       });
@@ -370,11 +296,7 @@ const createStripePaymentIntent = async (
       serviceType,
       partnerId,
       userId,
-      car_bookingId: serviceType === "CAR" ? booking.id : undefined,
       hotel_bookingId: serviceType === "HOTEL" ? booking.id : undefined,
-      security_bookingId: serviceType === "SECURITY" ? booking.id : undefined,
-      attraction_bookingId:
-        serviceType === "ATTRACTION" ? booking.id : undefined,
     },
   });
 
@@ -502,17 +424,11 @@ const cancelStripeBooking = async (
   userId: string
 ) => {
   const bookingModelMap: Record<string, any> = {
-    car: prisma.car_Booking,
     hotel: prisma.hotel_Booking,
-    security: prisma.security_Booking,
-    attraction: prisma.attraction_Booking,
   };
 
   const serviceModelMap: Record<string, any> = {
-    car: prisma.car,
     hotel: prisma.room,
-    security: prisma.security_Guard,
-    attraction: prisma.appeal,
   };
 
   const bookingModel = bookingModelMap[serviceType.toLowerCase()];
@@ -975,17 +891,11 @@ const cancelPayStackBooking = async (
   userId: string
 ) => {
   const bookingModelMap: Record<string, any> = {
-    car: prisma.car_Booking,
     hotel: prisma.hotel_Booking,
-    security: prisma.security_Booking,
-    attraction: prisma.attraction_Booking,
   };
 
   const serviceModelMap: Record<string, any> = {
-    car: prisma.car,
     hotel: prisma.hotel,
-    security: prisma.security_Guard,
-    attraction: prisma.appeal,
   };
 
   const bookingModel = bookingModelMap[serviceType.toLowerCase()];
@@ -1123,23 +1033,6 @@ const createStripePaymentIntentWebsite = async (
   // }
 
   switch (serviceType) {
-    case "CAR":
-      booking = await prisma.car_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(httpStatus.NOT_FOUND, "Car booking not found");
-
-      service = await prisma.car_Rental.findUnique({
-        where: { id: booking.carId },
-      });
-      if (!service) throw new ApiError(httpStatus.NOT_FOUND, "Car not found");
-
-      partnerId = service.partnerId;
-      serviceName = service.carName;
-      totalPrice = booking.totalPrice;
-      break;
-
     case "HOTEL":
       booking = await prisma.hotel_Booking.findUnique({
         where: { id: bookingId, userId },
@@ -1154,45 +1047,6 @@ const createStripePaymentIntentWebsite = async (
 
       partnerId = service.partnerId;
       serviceName = service.hotelName;
-      totalPrice = booking.totalPrice;
-      break;
-
-    case "SECURITY":
-      booking = await prisma.security_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(httpStatus.NOT_FOUND, "Security booking not found");
-
-      service = await prisma.security_Protocol.findUnique({
-        where: { id: booking.securityId },
-      });
-      if (!service)
-        throw new ApiError(httpStatus.NOT_FOUND, "Security service not found");
-
-      partnerId = service.partnerId;
-      serviceName = service.securityName;
-      totalPrice = booking.totalPrice;
-      break;
-
-    case "ATTRACTION":
-      booking = await prisma.attraction_Booking.findUnique({
-        where: { id: bookingId, userId },
-      });
-      if (!booking)
-        throw new ApiError(
-          httpStatus.NOT_FOUND,
-          "Attraction booking not found"
-        );
-
-      service = await prisma.attraction.findUnique({
-        where: { id: booking.attractionId },
-      });
-      if (!service)
-        throw new ApiError(httpStatus.NOT_FOUND, "Attraction not found");
-
-      partnerId = service.partnerId!;
-      serviceName = service.attractionName;
       totalPrice = booking.totalPrice;
       break;
 
@@ -1254,29 +1108,13 @@ const createStripePaymentIntentWebsite = async (
 
   // update booking with checkoutSessionId
   switch (serviceType) {
-    case "CAR":
-      await prisma.car_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: checkoutSession.id },
-      });
-      break;
     case "HOTEL":
       await prisma.hotel_Booking.update({
         where: { id: booking.id },
         data: { checkoutSessionId: checkoutSession.id },
       });
       break;
-    case "SECURITY":
-      await prisma.security_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: checkoutSession.id },
-      });
-      break;
-    case "ATTRACTION":
-      await prisma.attraction_Booking.update({
-        where: { id: booking.id },
-        data: { checkoutSessionId: checkoutSession.id },
-      });
+
       break;
   }
 
@@ -1298,11 +1136,7 @@ const createStripePaymentIntentWebsite = async (
       serviceType,
       partnerId,
       userId,
-      car_bookingId: serviceType === "CAR" ? booking.id : undefined,
       hotel_bookingId: serviceType === "HOTEL" ? booking.id : undefined,
-      security_bookingId: serviceType === "SECURITY" ? booking.id : undefined,
-      attraction_bookingId:
-        serviceType === "ATTRACTION" ? booking.id : undefined,
     },
   });
 
