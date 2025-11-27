@@ -14,7 +14,7 @@ generator client {
 
 enum UserRole {
   USER
-  BUSINESS_PARTNER
+  VENDOR
   ADMIN
   SUPER_ADMIN
 }

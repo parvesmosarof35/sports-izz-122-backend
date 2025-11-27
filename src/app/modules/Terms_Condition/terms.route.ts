@@ -14,7 +14,7 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   TermsController.getTerms
 );
@@ -34,7 +34,7 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   TermsController.getSingleTerms
 );

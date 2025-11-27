@@ -10,7 +10,7 @@ const router = express.Router();
 // verify email and phone number
 router.put(
   "/verify",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   SettingController.verifyEmailAndPhoneNumber
 );
 
@@ -20,7 +20,7 @@ router.get(
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.USER
   ),
   SettingController.getAbout
@@ -32,7 +32,7 @@ router.get(
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.USER
   ),
   SettingController.getCustomerContactInfo

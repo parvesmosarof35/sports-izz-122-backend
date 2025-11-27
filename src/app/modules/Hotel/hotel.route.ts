@@ -14,7 +14,7 @@ router.get(
   // auth(
   //   UserRole.ADMIN,
   //   UserRole.SUPER_ADMIN,
-  //   UserRole.BUSINESS_PARTNER,
+  //   UserRole.VENDOR,
   //   UserRole.USER
   // ),
   HotelController.getAllHotels
@@ -35,14 +35,14 @@ router.get(
 // get all my hotels for partner
 router.get(
   "/partner-hotels",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   HotelController.getAllHotelsForPartner
 );
 
 // get all my hotel rooms for partner
 router.get(
   "/partner-rooms/:hotelId",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   HotelController.getAllHotelRoomsForPartner
 );
 
@@ -59,7 +59,7 @@ router.get(
   // auth(
   //   UserRole.ADMIN,
   //   UserRole.SUPER_ADMIN,
-  //   UserRole.BUSINESS_PARTNER,
+  //   UserRole.VENDOR,
   //   UserRole.USER
   // ),
   HotelController.getPopularHotels
@@ -71,7 +71,7 @@ router.get(
   // auth(
   //   UserRole.ADMIN,
   //   UserRole.SUPER_ADMIN,
-  //   UserRole.BUSINESS_PARTNER,
+  //   UserRole.VENDOR,
   //   UserRole.USER
   // ),
   HotelController.getSingleHotel
@@ -83,7 +83,7 @@ router.get(
   // auth(
   //   UserRole.ADMIN,
   //   UserRole.SUPER_ADMIN,
-  //   UserRole.BUSINESS_PARTNER,
+  //   UserRole.VENDOR,
   //   UserRole.USER
   // ),
   HotelController.getSingleHotelRoom
@@ -99,7 +99,7 @@ router.post(
 // create hotel
 router.post(
   "/",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   uploadFile.upload.fields([
     { name: "businessLogo", maxCount: 1 },
     { name: "hotelDocs", maxCount: 5 },
@@ -112,7 +112,7 @@ router.post(
 // create hotel room
 router.post(
   "/room/:hotelId",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   uploadFile.upload.fields([
     { name: "hotelImages", maxCount: 5 },
     { name: "hotelRoomImages", maxCount: 5 },
@@ -125,7 +125,7 @@ router.post(
 // update hotel
 router.patch(
   "/:hotelId",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   uploadFile.upload.fields([
     { name: "businessLogo", maxCount: 1 },
     { name: "hotelDocs", maxCount: 5 },
@@ -137,7 +137,7 @@ router.patch(
 // update hotel room
 router.patch(
   "/room/:roomId",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   uploadFile.upload.fields([
     { name: "hotelImages", maxCount: 5 },
     { name: "hotelRoomImages", maxCount: 5 },

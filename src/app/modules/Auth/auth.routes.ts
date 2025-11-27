@@ -25,7 +25,7 @@ router.post(
   "/logout",
   auth(
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN
   ),
@@ -39,7 +39,7 @@ router.put(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   validateRequest(authValidation.changePasswordValidationSchema),
   AuthController.changePassword

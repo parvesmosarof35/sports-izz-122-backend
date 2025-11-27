@@ -43,7 +43,7 @@ router.get(
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.USER
   ),
   UserController.getMyProfile
@@ -56,7 +56,7 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   UserController.getUserById
 );
@@ -123,7 +123,7 @@ router.patch(
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.USER
   ),
   uploadFile.profileImage,
@@ -138,7 +138,7 @@ router.patch(
   auth(
     UserRole.SUPER_ADMIN,
     UserRole.ADMIN,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.USER
   ),
   uploadFile.profileImage,
@@ -148,7 +148,7 @@ router.patch(
 // delete my account
 router.patch(
   "/my-account",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   UserController.deleteMyAccount
 );
 

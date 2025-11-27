@@ -404,9 +404,9 @@ const getAllBusinessPartners = async (
 
   const filters: Prisma.UserWhereInput[] = [];
 
-  // Filter for active users and role BUSINESS_PARTNER only
+  // Filter for active users and role VENDOR only
   filters.push({
-    role: UserRole.BUSINESS_PARTNER,
+    role: UserRole.VENDOR,
     status: UserStatus.ACTIVE,
   });
 
@@ -525,9 +525,9 @@ const getAllNeededApprovedPartners = async (
 
   const filters: Prisma.UserWhereInput[] = [];
 
-  // Filter for inactive users and role BUSINESS_PARTNER only
+  // Filter for inactive users and role VENDOR only
   filters.push({
-    role: UserRole.BUSINESS_PARTNER,
+    role: UserRole.VENDOR,
     status: UserStatus.INACTIVE,
   });
 
@@ -702,7 +702,7 @@ const getUserById = async (id: string): Promise<SafeUser> => {
 // get user by only partner
 const getPartnerById = async (id: string): Promise<SafeUser> => {
   const user = await prisma.user.findUnique({
-    where: { id, role: UserRole.BUSINESS_PARTNER },
+    where: { id, role: UserRole.VENDOR },
     select: {
       id: true,
       fullName: true,

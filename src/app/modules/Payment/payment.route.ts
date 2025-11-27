@@ -9,14 +9,14 @@ const router = express.Router();
 // stripe account onboarding
 router.post(
   "/stripe-account-onboarding",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.stripeAccountOnboarding
 );
 
 // checkout session on stripe
 router.post(
   "/create-payment-intent/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.createStripePaymentIntent
 );
 
@@ -30,7 +30,7 @@ router.post(
 // cancel booking stripe
 router.post(
   "/stripe-cancel-booking/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.cancelStripeBooking
 );
 
@@ -50,28 +50,28 @@ router.post(
 // get my all my transactions
 router.get(
   "/my-orders",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.getMyTransactions
 );
 
 // pay-stack account sub-account
 router.post(
   "/paystack-account-sub-account",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.payStackAccountSubAccount
 );
 
 // create checkout session on pay-stack
 router.post(
   "/create-checkout-session-paystack/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.createCheckoutSessionPayStack
 );
 
 // charge card (in-app payment)
 router.post(
   "/charge-card",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.chargeCardPayStack
 );
 
@@ -85,7 +85,7 @@ router.post(
 // pay-stack cancel booking
 router.post(
   "/paystack-cancel-booking/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.cancelPayStackBooking
 );
 
@@ -94,14 +94,14 @@ router.post(
 // checkout session on stripe
 router.post(
   "/create-payment-intent-website/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.createStripePaymentIntentWebsite
 );
 
 // create checkout session on pay-stack
 router.post(
   "/create-checkout-session-paystack-website/:serviceType/:bookingId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   PaymentController.createCheckoutSessionPayStackWebsite
 );
 

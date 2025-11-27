@@ -14,7 +14,7 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   PrivacyController.getAllPolicy
 );
@@ -26,7 +26,7 @@ router.get(
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN,
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER
+    UserRole.VENDOR
   ),
   PrivacyController.getSinglePolicy
 );

@@ -8,7 +8,7 @@ const router = express.Router();
 // get all hotel bookings
 router.get(
   "/",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   HotelBookingController.getAllHotelBookings
 );
 
@@ -22,21 +22,21 @@ router.get(
 // get hotel booking by id
 router.get(
   "/:bookingId",
-  auth(UserRole.BUSINESS_PARTNER, UserRole.USER),
+  auth(UserRole.VENDOR, UserRole.USER),
   HotelBookingController.getHotelBookingById
 );
 
 // create hotel room booking
 router.post(
   "/:roomId",
-  auth(UserRole.USER, UserRole.BUSINESS_PARTNER),
+  auth(UserRole.USER, UserRole.VENDOR),
   HotelBookingController.createHotelRoomBooking
 );
 
 // update hotel booking status
 router.patch(
   "/status/:bookingId",
-  auth(UserRole.BUSINESS_PARTNER),
+  auth(UserRole.VENDOR),
   HotelBookingController.updateBookingStatus
 );
 

@@ -10,7 +10,7 @@ router.post(
   "/send-otp",
   auth(
     UserRole.USER,
-    UserRole.BUSINESS_PARTNER,
+    UserRole.VENDOR,
     UserRole.ADMIN,
     UserRole.SUPER_ADMIN
   ),
