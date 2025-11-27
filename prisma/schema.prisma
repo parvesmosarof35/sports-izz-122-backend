@@ -121,8 +121,7 @@ model User {
   paymentNotification Boolean @default(true)
   emailNotification   Boolean @default(true)
 
-  isHotel      Boolean @default(false)
-
+  isHotel Boolean @default(false)
 
   otp        String?
   otpExpiry  DateTime?
@@ -158,6 +157,23 @@ model Admin {
   updatedAt DateTime @updatedAt
 
   @@map("admins")
+}
+
+model Venue {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  venueName    String
+  sportsType   String
+  pricePerHour Float
+  capacity     Int
+  location     String
+  venueStatus  String
+  description  String
+  venueImage   String
+  amenities    Json? // [{ amenityName: string, amenityImage: string }, ...]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("venues")
 }
 
 model Hotel {
