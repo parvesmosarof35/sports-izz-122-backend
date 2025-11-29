@@ -194,15 +194,14 @@ model Venue {
 }
 
 model VenueAvailability {
-  id        String   @id @default(uuid())
-  date      DateTime // Selected date on calendar
-  startTime String // "07:00"
-  endTime   String // "02:00"
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  date      DateTime
+  // multiple time slot in single date
+  slots     Json[] // [{ startTime: "07:00", endTime: "09:00", venueId: "v1" }]
+  createdAt DateTime @default(now())
 
   venueId String
   venue   Venue  @relation(fields: [venueId], references: [id])
-
-  createdAt DateTime @default(now())
 
   @@map("venue_availability")
 }
