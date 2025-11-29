@@ -81,6 +81,21 @@ enum SupportStatus {
   Closed
 }
 
+enum SportsType {
+  BASKETBALL
+  FOOTBALL
+  TENNIS
+  PICKLEBALL
+  SWIMMING
+  RUGBY
+  PLIATES
+  TAKRAW
+  CRICKET
+  BADMINTON
+  VOLLEYBALL
+  OTHER
+}
+
 // ---------------------------------------------------------
 //  MODEL
 // ---------------------------------------------------------
@@ -160,20 +175,36 @@ model Admin {
 }
 
 model Venue {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  venueName    String
-  sportsType   String
-  pricePerHour Float
-  capacity     Int
-  location     String
-  venueStatus  String
-  description  String
-  venueImage   String
-  amenities    Json? // [{ amenityName: string, amenityImage: string }, ...]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  venueName           String
+  sportsType          SportsType
+  pricePerHour        Float
+  capacity            Int
+  location            String
+  venueStatus         Boolean             @default(true)
+  description         String
+  venueImage          String
+  amenities           Json? // [{ amenityName: string, amenityImage: string }, ...]
+  counterNumbers      Int[] // like input 5 --> [1, 2, 3, 4, 5]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  venueAvailabilities VenueAvailability[]
 
   @@map("venues")
+}
+
+model VenueAvailability {
+  id        String   @id @default(uuid())
+  date      DateTime // Selected date on calendar
+  startTime String // "07:00"
+  endTime   String // "02:00"
+
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("venue_availability")
 }
 
 model Hotel {

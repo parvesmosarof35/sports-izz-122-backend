@@ -20,6 +20,7 @@ import { humanRightRoute } from "../modules/Human_Rights/humanRight.route";
 import { cancelReservationRoute } from "../modules/Cancel_Reservation/cancel_reservation.route";
 import { refundPolicyRoute } from "../modules/Refund_Policy/refund_policy.route";
 import { newsRoomRoute } from "../modules/NewsRoom/news_room.route";
+import { venueRoute } from "../modules/Venue/venue.route";
 
 const router = express.Router();
 
@@ -31,6 +32,10 @@ const moduleRoutes = [
   {
     path: "/auth",
     route: authRoutes,
+  },
+  {
+    path: "/venues",
+    route: venueRoute,
   },
   {
     path: "/hotels",
