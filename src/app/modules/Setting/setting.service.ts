@@ -3,11 +3,6 @@ import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
 
-// verify email and phone number
-const verifyEmailAndPhoneNumber = async (userId: string) => {
-  // const result = await prisma.user.updateMany({ where: { id: userId }, data: { emailVerified: true, phoneVerified: true } });
-  // return result;
-};
 
 // create app about
 const createOrUpdateAbout = async (payload: any) => {
@@ -101,7 +96,6 @@ const updateNotificationSettings = async (
 };
 
 export const SettingService = {
-  verifyEmailAndPhoneNumber,
   createOrUpdateAbout,
   getAbout,
   createOrUpdateCustomerContactInfo,

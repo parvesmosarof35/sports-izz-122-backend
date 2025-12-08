@@ -4,19 +4,6 @@ import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
 import { SettingService } from "./setting.service";
 
-// verify email and phone number
-const verifyEmailAndPhoneNumber = catchAsync(
-  async (req: Request, res: Response) => {
-    const userId = req.user?.id;
-    const result = await SettingService.verifyEmailAndPhoneNumber(userId);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Email and phone number verified successfully",
-      data: result,
-    });
-  }
-);
 
 const createOrUpdateAbout = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
@@ -83,7 +70,6 @@ const updateNotificationSettings = catchAsync(async (req: Request, res: Response
 });
 
 export const SettingController = {
-  verifyEmailAndPhoneNumber,
   createOrUpdateAbout,
   getAbout,
   createOrUpdateCustomerContactInfo,
