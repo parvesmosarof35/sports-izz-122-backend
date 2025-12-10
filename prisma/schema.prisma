@@ -123,14 +123,6 @@ model User {
   stripeAccountId   String?
   isStripeConnected Boolean @default(false)
 
-  // Pay-stack
-  payStackMerchantId  String?
-  isPayStackConnected Boolean @default(false)
-
-  // Sub-account info for pay-stack
-  payStackSubAccountId String?
-  payStackSubAccount   String?
-
   // notification Preferences
   supportNotification Boolean @default(true)
   paymentNotification Boolean @default(true)
@@ -157,6 +149,7 @@ model User {
   receiver       Channel[]       @relation("ChannelPerson2")
   messages       Message[]       @relation("sentMessages")
   support        Support[]
+  venues         Venue[]
 
   @@map("users")
 }
@@ -175,35 +168,54 @@ model Admin {
 }
 
 model Venue {
-  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
-  venueName           String
-  sportsType          SportsType
-  pricePerHour        Float
-  capacity            Int
-  location            String
-  venueStatus         Boolean             @default(true)
-  description         String
-  venueImage          String
-  amenities           Json? // [{ amenityName: string, amenityImage: string }, ...]
-  counterNumbers      Int[] // like input 5 --> [1, 2, 3, 4, 5]
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  venueName    String
+  sportsType   SportsType
+  pricePerHour Float
+  capacity     Int
+  location     String
+  venueStatus  Boolean    @default(true)
+  description  String
+  venueImage   String
+  amenities    Json? // [{ amenityName: string, amenityImage: string }, ...]
+  courtNumbers Int[] // like input 5 --> [1, 2, 3, 4, 5]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // relationships
   venueAvailabilities VenueAvailability[]
+  scheduleSlots       ScheduleSlot[]
+  vendorId            String?             @db.ObjectId
+  user                User?               @relation(fields: [vendorId], references: [id])
 
   @@map("venues")
 }
 
 model VenueAvailability {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  date      DateTime
+  day       DateTime
   // multiple time slot in single date
-  slots     Json[] // [{ startTime: "07:00", endTime: "09:00", venueId: "v1" }]
   createdAt DateTime @default(now())
 
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id])
+  venueId       String
+  venue         Venue          @relation(fields: [venueId], references: [id])
+  scheduleSlots ScheduleSlot[]
 
   @@map("venue_availability")
+}
+
+model ScheduleSlot {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  from String // "10:00 AM or PM"
+  to   String // "12:00 AM or PM"
+
+  // relationships
+  venueId           String
+  venue             Venue              @relation(fields: [venueId], references: [id])
+  availableVenueId  String?            @db.ObjectId
+  venueAvailability VenueAvailability? @relation(fields: [availableVenueId], references: [id])
+
+  @@map("schedule_slots")
 }
 
 model Hotel {
