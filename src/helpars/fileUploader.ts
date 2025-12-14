@@ -11,14 +11,57 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Allowed file types
+// allowed file types
 const allowedTypes = [
+  // images
   "image/jpeg",
   "image/png",
+  "image/avif",
   "image/webp",
+
+  // documents
   "application/pdf",
   "application/msword", // .doc
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+  "application/vnd.ms-excel", // .xls
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "application/vnd.ms-powerpoint", // .ppt
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+
+  // archives
+  "application/zip",
+
+  // openDocument formats
+  "application/vnd.oasis.opendocument.presentation", // .odp
+  "application/vnd.oasis.opendocument.spreadsheet", // .ods
+  "application/vnd.oasis.opendocument.text", // .odt
+  "application/vnd.oasis.opendocument.chart",
+  "application/vnd.oasis.opendocument.graphics",
+  "application/vnd.oasis.opendocument.image",
+  "application/vnd.oasis.opendocument.text-master",
+
+  // text files
+  "text/plain",
+  "text/csv",
+  "text/html",
+  "text/markdown",
+  "text/xml",
+  "text/json",
+  "application/json",
+  "application/octet-stream",
+
+  // video types
+  "video/mp4", // MP4
+  "video/mpeg", // MPEG
+  "video/x-msvideo", // AVI
+  "video/x-ms-wmv", // WMV
+  "video/quicktime", // MOV
+  "video/x-flv", // FLV
+  "video/webm", // WEBM
+  "video/3gpp", // 3GP
+  "video/3gpp2", // 3G2
+  "video/ogg", // OGG
+  "video/x-matroska", // MKV
 ];
 
 // File filter
