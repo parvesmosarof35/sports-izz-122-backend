@@ -98,21 +98,9 @@ const hotelImages = upload.array("hotelImages", 5);
 const hotelRoomImages = upload.array("hotelRoomImages", 5);
 const hotelDocs = upload.array("hotelDocs", 5);
 
-const securityLogo = upload.single("securityLogo");
-const securityImages = upload.array("securityImages", 5);
-const securityDocs = upload.array("securityDocs", 5);
-
-const carBusinessLogo = upload.single("businessLogo");
-const carImages = upload.array("carImages", 5);
-const carDocs = upload.array("carDocs", 5);
-
-const attractionBusinessLogo = upload.single("businessLogo");
-const attractionImages = upload.array("attractionImages", 5);
-const attractionDocs = upload.array("attractionDocs", 5);
+const venueImage = upload.single("venueImage");
 
 const uploadMessageImages = upload.array("messageImages", 5);
-
-const newsImage = upload.array("image", 5);
 
 // Cloudinary configuration
 cloudinary.config({
@@ -163,26 +151,15 @@ const uploadToCloudinary = async (
 export const uploadFile = {
   upload,
   profileImage,
+
   hotelLogo,
   hotelImages,
   hotelRoomImages,
   hotelDocs,
 
-  securityLogo,
-  securityImages,
-  securityDocs,
-
-  carBusinessLogo,
-  carImages,
-  carDocs,
-
-  attractionBusinessLogo,
-  attractionImages,
-  attractionDocs,
+  venueImage,
 
   uploadMessageImages,
-
-  newsImage,
 
   uploadToCloudinary,
 };
