@@ -54,7 +54,10 @@ const getAllVenues = catchAsync(async (req: Request, res: Response) => {
 // get venue group by SportsType
 const getVenueGroupBySportsType = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await VenueService.getVenueGroupBySportsType();
+    const filter = pick(req.query, filterField);
+    const options = pick(req.query, paginationFields);
+
+    const result = await VenueService.getVenueGroupBySportsType(filter, options);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,

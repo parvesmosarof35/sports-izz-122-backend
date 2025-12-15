@@ -187,14 +187,101 @@ const getAllVenues = async (
 };
 
 // get venue group by SportsType
-const getVenueGroupBySportsType = async () => {
-  const result = await prisma.venue.groupBy({
-    by: ["sportsType"],
-    _count: {
-      id: true,
+const getVenueGroupBySportsType = async (
+  params: IVenueFilterRequest,
+  options: IPaginationOptions
+) => {
+  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
+
+  const { searchTerm, minPrice, maxPrice, ...filterData } = params;
+
+  // convert string to number for price filters
+  const minPriceNum = minPrice ? Number(minPrice) : undefined;
+  const maxPriceNum = maxPrice ? Number(maxPrice) : undefined;
+
+  const filters: Prisma.VenueWhereInput[] = [];
+
+  // text search
+  if (params?.searchTerm) {
+    filters.push({
+      OR: searchableFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  // price range filter
+  if (minPriceNum !== undefined || maxPriceNum !== undefined) {
+    const priceFilter: any = {};
+    if (minPriceNum !== undefined) priceFilter.gte = minPriceNum;
+    if (maxPriceNum !== undefined) priceFilter.lte = maxPriceNum;
+
+    filters.push({
+      pricePerHour: priceFilter,
+    });
+  }
+
+  // exact match filter
+  if (Object.keys(filterData).length > 0) {
+    filters.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  const where: Prisma.VenueWhereInput = {
+    AND: filters,
+  };
+
+  // get all venues with filters
+  const venues = await prisma.venue.findMany({
+    where,
+    include: {
+      venueAvailabilities: {
+        include: {
+          scheduleSlots: true,
+        },
+      },
+    },
+    orderBy: {
+      sportsType: "asc",
     },
   });
-  return result;
+
+  // group venues by sportsType
+  const groupedData = venues.reduce((acc: any, venue) => {
+    const sportsType = venue.sportsType;
+    if (!acc[sportsType]) {
+      acc[sportsType] = {
+        sportsType,
+        venues: [],
+        count: 0,
+      };
+    }
+    acc[sportsType].venues.push(venue);
+    acc[sportsType].count += 1;
+    return acc;
+  }, {});
+
+  // convert to array and apply pagination
+  const groupedArray = Object.values(groupedData);
+  const total = groupedArray.length;
+  const paginatedData = groupedArray.slice(skip, skip + limit);
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: paginatedData,
+  };
 };
 
 // get all my venues
