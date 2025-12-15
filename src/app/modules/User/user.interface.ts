@@ -19,10 +19,7 @@ export type IUpdateUser = {
   address?: string;
   country?: string;
   profileImage?: string;
-  age?: number;
-  profession?: string;
-  gender?: string;
-  companyName?: string;
+  dateOfBirth?: Date;
 };
 
 export type IFilterRequest = {
