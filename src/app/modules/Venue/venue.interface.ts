@@ -1,5 +1,16 @@
 import { SportsType } from "@prisma/client";
 
+export type IVenueFilterRequest = {
+  searchTerm?: string | undefined;
+  venueName?: string | undefined;
+  sportsType?: SportsType | undefined;
+  minPrice?: number | undefined;
+  maxPrice?: number | undefined;
+  capacity?: number | undefined;
+  location?: string | undefined;
+  venueStatus?: boolean;
+};
+
 export interface IVenue {
   venueName: string;
   sportsType: SportsType;
@@ -8,7 +19,7 @@ export interface IVenue {
   location: string;
   description: string;
   venueImage: string;
-  amenities: Array<{ amenityName: string; /**amenityImage: string  */}>;
+  amenities: Array<{ amenityName: string /**amenityImage: string  */ }>;
   courtNumbers: number | number[];
   venueStatus?: boolean;
 }

@@ -1,9 +1,15 @@
 import httpStatus from "http-status";
 import ApiError from "../../../errors/ApiErrors";
 import prisma from "../../../shared/prisma";
-import { dayToWeekdayEnum } from "./venue.constant";
-import { IVenue, IVenuePayload } from "./venue.interface";
-import { Weekday } from "@prisma/client";
+import {
+  dayToWeekdayEnum,
+  // numericFields,
+  searchableFields,
+} from "./venue.constant";
+import { IVenue, IVenueFilterRequest, IVenuePayload } from "./venue.interface";
+import { Prisma, Weekday } from "@prisma/client";
+import { IPaginationOptions } from "../../../interfaces/paginations";
+import { paginationHelpers } from "../../../helpars/paginationHelper";
 
 // create venue
 const createVenue = async (vendorId: string, payload: IVenuePayload) => {
@@ -93,14 +99,99 @@ const createVenue = async (vendorId: string, payload: IVenuePayload) => {
 };
 
 // get all venues
-const getAllVenues = async () => {
+const getAllVenues = async (
+  params: IVenueFilterRequest,
+  options: IPaginationOptions
+) => {
+  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
+
+  const { searchTerm, minPrice, maxPrice, ...filterData } = params;
+
+  // convert string to number for price filters
+  const minPriceNum = minPrice ? Number(minPrice) : undefined;
+  const maxPriceNum = maxPrice ? Number(maxPrice) : undefined;
+
+  const filters: Prisma.VenueWhereInput[] = [];
+
+  // text search
+  if (params?.searchTerm) {
+    filters.push({
+      OR: searchableFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  // price range filter
+  if (minPriceNum !== undefined || maxPriceNum !== undefined) {
+    const priceFilter: any = {};
+    if (minPriceNum !== undefined) priceFilter.gte = minPriceNum;
+    if (maxPriceNum !== undefined) priceFilter.lte = maxPriceNum;
+
+    filters.push({
+      pricePerHour: priceFilter,
+    });
+  }
+
+  // exact match filter
+  if (Object.keys(filterData).length > 0) {
+    filters.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  const where: Prisma.VenueWhereInput = {
+    AND: filters,
+  };
+
   const result = await prisma.venue.findMany({
+    where,
     include: {
       venueAvailabilities: {
         include: {
           scheduleSlots: true,
         },
       },
+    },
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc",
+          },
+  });
+
+  const total = await prisma.venue.count({
+    where,
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: result,
+  };
+};
+
+// get venue group by SportsType
+const getVenueGroupBySportsType = async () => {
+  const result = await prisma.venue.groupBy({
+    by: ["sportsType"],
+    _count: {
+      id: true,
     },
   });
   return result;
@@ -343,6 +434,7 @@ const deleteVenue = async (vendorId: string, venueId: string) => {
 export const VenueService = {
   createVenue,
   getAllVenues,
+  getVenueGroupBySportsType,
   getAllMyVenues,
   updateVenue,
   deleteVenue,

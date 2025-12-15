@@ -5,6 +5,9 @@ import { VenueValidation } from "./venue.validation";
 import { uploadFile } from "../../../helpars/fileUploader";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
+import { pick } from "../../../shared/pick";
+import { filterField } from "./venue.constant";
+import { paginationFields } from "../../../constants/pagination";
 
 // create venue
 const createVenue = catchAsync(async (req: Request, res: Response) => {
@@ -36,7 +39,10 @@ const createVenue = catchAsync(async (req: Request, res: Response) => {
 
 // get all venues
 const getAllVenues = catchAsync(async (req: Request, res: Response) => {
-  const result = await VenueService.getAllVenues();
+  const filter = pick(req.query, filterField);
+  const options = pick(req.query, paginationFields);
+
+  const result = await VenueService.getAllVenues(filter, options);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -44,6 +50,19 @@ const getAllVenues = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+
+// get venue group by SportsType
+const getVenueGroupBySportsType = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await VenueService.getVenueGroupBySportsType();
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Venues retrieved successfully!",
+      data: result,
+    });
+  }
+);
 
 // get all my venues
 const getAllMyVenues = catchAsync(async (req: Request, res: Response) => {
@@ -103,6 +122,7 @@ const deleteVenue = catchAsync(async (req: Request, res: Response) => {
 export const VenueController = {
   createVenue,
   getAllVenues,
+  getVenueGroupBySportsType,
   getAllMyVenues,
   updateVenue,
   deleteVenue,
