@@ -106,7 +106,7 @@ const createVenue = async (vendorId: string, payload: IVenuePayload) => {
   return result;
 };
 
-// create venue
+// get all venues
 const getAllVenues = async () => {
   const result = await prisma.venue.findMany({
     include: {
@@ -120,4 +120,23 @@ const getAllVenues = async () => {
   return result;
 };
 
-export const VenueService = { createVenue, getAllVenues };
+// get all my venues
+const getAllMyVenues = async (vendorId: string) => {
+  const result = await prisma.venue.findMany({
+    where: {
+      vendorId,
+    },
+    include: {
+      venueAvailabilities: {
+        include: {
+          scheduleSlots: true,
+        },
+      },
+    },
+  });
+  return result;
+};
+
+// update venue
+
+export const VenueService = { createVenue, getAllVenues, getAllMyVenues };

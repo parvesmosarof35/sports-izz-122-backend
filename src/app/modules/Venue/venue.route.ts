@@ -22,4 +22,11 @@ router.post(
 // get all venues
 router.get("/", VenueController.getAllVenues);
 
+// get all my venues
+router.get(
+  "/my",
+  auth(UserRole.VENDOR),
+  VenueController.getAllMyVenues
+);
+
 export const venueRoute = router;

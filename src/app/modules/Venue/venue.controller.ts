@@ -45,7 +45,21 @@ const getAllVenues = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all my venues
+const getAllMyVenues = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.user?.id;
+  const result = await VenueService.getAllMyVenues(vendorId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Venues retrieved successfully!",
+    data: result,
+  });
+});
+
 export const VenueController = {
   createVenue,
   getAllVenues,
+  getAllMyVenues,
 };
