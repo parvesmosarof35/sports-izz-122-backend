@@ -1,17 +1,9 @@
+import httpStatus from "http-status";
+import ApiError from "../../../errors/ApiErrors";
 import prisma from "../../../shared/prisma";
+import { dayToWeekdayEnum } from "./venue.constant";
 import { IVenue, IVenuePayload } from "./venue.interface";
 import { Weekday } from "@prisma/client";
-
-// convert day string to Weekday enum
-const dayToWeekdayEnum: { [key: string]: Weekday } = {
-  Monday: Weekday.MONDAY,
-  Tuesday: Weekday.TUESDAY,
-  Wednesday: Weekday.WEDNESDAY,
-  Thursday: Weekday.THURSDAY,
-  Friday: Weekday.FRIDAY,
-  Saturday: Weekday.SATURDAY,
-  Sunday: Weekday.SUNDAY,
-};
 
 // create venue
 const createVenue = async (vendorId: string, payload: IVenuePayload) => {
@@ -222,41 +214,55 @@ const updateVenue = async (
 
       // venueAvailabilities update if provided
       if (venueAvailabilities && venueAvailabilities.length > 0) {
-        // delete existing venue availabilities
-        await tx.scheduleSlot.deleteMany({
-          where: {
-            venueId: venueId,
-            availableVenueId: {
-              not: null,
-            },
-          },
-        });
-
-        await tx.venueAvailability.deleteMany({
-          where: {
-            venueId: venueId,
-          },
-        });
-
-        // create new venue availabilities and schedule slots
         for (const availability of venueAvailabilities) {
-          const venueAvailability = await tx.venueAvailability.create({
-            data: {
-              day: dayToWeekdayEnum[availability.day] || Weekday.MONDAY,
+          const dayEnum = dayToWeekdayEnum[availability.day] || Weekday.MONDAY;
+
+          // check if availability already exists for this day
+          const existingAvailability = await tx.venueAvailability.findFirst({
+            where: {
               venueId: venueId,
+              day: dayEnum,
             },
           });
 
-          // schedule slots for this availability
-          for (const slot of availability.scheduleSlots) {
-            await tx.scheduleSlot.create({
-              data: {
-                from: slot.from,
-                to: slot.to,
-                venueId: venueId,
-                availableVenueId: venueAvailability.id,
+          if (existingAvailability) {
+            // delete existing schedule slots for this day
+            await tx.scheduleSlot.deleteMany({
+              where: {
+                availableVenueId: existingAvailability.id,
               },
             });
+
+            // create new schedule slots for existing availability
+            for (const slot of availability.scheduleSlots) {
+              await tx.scheduleSlot.create({
+                data: {
+                  from: slot.from,
+                  to: slot.to,
+                  venueId: venueId,
+                  availableVenueId: existingAvailability.id,
+                },
+              });
+            }
+          } else {
+            // create new availability and slots
+            const venueAvailability = await tx.venueAvailability.create({
+              data: {
+                day: dayEnum,
+                venueId: venueId,
+              },
+            });
+
+            for (const slot of availability.scheduleSlots) {
+              await tx.scheduleSlot.create({
+                data: {
+                  from: slot.from,
+                  to: slot.to,
+                  venueId: venueId,
+                  availableVenueId: venueAvailability.id,
+                },
+              });
+            }
           }
         }
       }
@@ -286,9 +292,58 @@ const updateVenue = async (
   return result;
 };
 
+// delete venue
+const deleteVenue = async (vendorId: string, venueId: string) => {
+  // find venue
+  const venue = await prisma.venue.findUnique({
+    where: {
+      id: venueId,
+      vendorId,
+    },
+  });
+
+  if (!venue) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Venue not found!");
+  }
+
+  const result = await prisma.$transaction(
+    async (tx) => {
+      // delete all schedule slots
+      await tx.scheduleSlot.deleteMany({
+        where: {
+          venueId: venueId,
+        },
+      });
+
+      // delete all venue availabilities
+      await tx.venueAvailability.deleteMany({
+        where: {
+          venueId: venueId,
+        },
+      });
+
+      // delete the venue
+      const deletedVenue = await tx.venue.delete({
+        where: {
+          id: venueId,
+          vendorId,
+        },
+      });
+
+      return deletedVenue;
+    },
+    {
+      timeout: 30000,
+    }
+  );
+
+  return result;
+};
+
 export const VenueService = {
   createVenue,
   getAllVenues,
   getAllMyVenues,
   updateVenue,
+  deleteVenue,
 };

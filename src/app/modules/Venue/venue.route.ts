@@ -23,11 +23,7 @@ router.post(
 router.get("/", VenueController.getAllVenues);
 
 // get all my venues
-router.get(
-  "/my",
-  auth(UserRole.VENDOR),
-  VenueController.getAllMyVenues
-);
+router.get("/my", auth(UserRole.VENDOR), VenueController.getAllMyVenues);
 
 // update venue
 router.patch(
@@ -38,5 +34,8 @@ router.patch(
   validateRequest(VenueValidation.updateVenueValidation),
   VenueController.updateVenue
 );
+
+// delete venue
+router.delete("/:venueId", auth(UserRole.VENDOR), VenueController.deleteVenue);
 
 export const venueRoute = router;

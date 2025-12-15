@@ -87,9 +87,23 @@ const updateVenue = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// delete venue
+const deleteVenue = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.user?.id;
+  const venueId = req.params.venueId;
+  const result = await VenueService.deleteVenue(vendorId, venueId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Venue deleted successfully!",
+    data: result,
+  });
+});
+
 export const VenueController = {
   createVenue,
   getAllVenues,
   getAllMyVenues,
   updateVenue,
+  deleteVenue,
 };
