@@ -58,8 +58,38 @@ const getAllMyVenues = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// update venue
+const updateVenue = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.user?.id;
+  const venueId = req.params.venueId;
+
+  // venue image upload if provided
+  let venueImageUrl = "";
+  if (req.file) {
+    const uploadedFile = await uploadFile.uploadToCloudinary(req.file);
+    venueImageUrl = uploadedFile?.secure_url || "";
+  }
+
+  const data = req.body;
+
+  const payload = {
+    ...data,
+    ...(venueImageUrl && { venueImage: venueImageUrl }),
+  };
+
+  const result = await VenueService.updateVenue(vendorId, venueId, payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Venue updated successfully!",
+    data: result,
+  });
+});
+
 export const VenueController = {
   createVenue,
   getAllVenues,
   getAllMyVenues,
+  updateVenue,
 };

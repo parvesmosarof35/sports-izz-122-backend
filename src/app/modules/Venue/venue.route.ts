@@ -29,4 +29,14 @@ router.get(
   VenueController.getAllMyVenues
 );
 
+// update venue
+router.patch(
+  "/:venueId",
+  auth(UserRole.VENDOR),
+  uploadFile.venueImage,
+  parseBodyData,
+  validateRequest(VenueValidation.updateVenueValidation),
+  VenueController.updateVenue
+);
+
 export const venueRoute = router;

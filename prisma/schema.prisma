@@ -193,7 +193,7 @@ model Venue {
 
 model VenueAvailability {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  day       DateTime
+  day       Weekday
   // multiple time slot in single date
   createdAt DateTime @default(now())
 

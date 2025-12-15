@@ -10,6 +10,7 @@ export interface IVenue {
   venueImage: string;
   amenities: Array<{ amenityName: string; /**amenityImage: string  */}>;
   courtNumbers: number | number[];
+  venueStatus?: boolean;
 }
 
 export interface IVenuePayload extends IVenue {
