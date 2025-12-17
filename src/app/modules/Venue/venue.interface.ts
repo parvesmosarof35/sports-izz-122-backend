@@ -1,9 +1,7 @@
-import { SportsType } from "@prisma/client";
-
 export type IVenueFilterRequest = {
   searchTerm?: string | undefined;
   venueName?: string | undefined;
-  sportsType?: SportsType | undefined;
+  sportsType?: string | undefined;
   minPrice?: number | undefined;
   maxPrice?: number | undefined;
   capacity?: number | undefined;
@@ -13,7 +11,7 @@ export type IVenueFilterRequest = {
 
 export interface IVenue {
   venueName: string;
-  sportsType: SportsType;
+  sportsType: string;
   pricePerHour: number;
   capacity: number;
   location: string;

@@ -81,21 +81,6 @@ enum SupportStatus {
   Closed
 }
 
-enum SportsType {
-  BASKETBALL
-  FOOTBALL
-  TENNIS
-  PICKLEBALL
-  SWIMMING
-  RUGBY
-  PLIATES
-  TAKRAW
-  CRICKET
-  BADMINTON
-  VOLLEYBALL
-  OTHER
-}
-
 // ---------------------------------------------------------
 //  MODEL
 // ---------------------------------------------------------
@@ -170,7 +155,7 @@ model Admin {
 model Venue {
   id                  String              @id @default(auto()) @map("_id") @db.ObjectId
   venueName           String
-  sportsType          SportsType
+  sportsType          String
   pricePerHour        Float
   capacity            Int
   location            String

@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { SportsType } from "@prisma/client";
 
 const createVenueValidation = z.object({
   body: z.object({
     venueName: z.string().min(1, "Venue name is required"),
-    sportsType: z.nativeEnum(SportsType),
+    sportsType: z.string().min(1, "Venue sportsType is required"),
     pricePerHour: z.number().positive("Price per hour must be positive"),
     capacity: z.number().positive("Capacity must be positive"),
     location: z.string().min(1, "Location is required"),
@@ -49,7 +48,7 @@ const createVenueValidation = z.object({
 const updateVenueValidation = z.object({
   body: z.object({
     venueName: z.string().min(1, "Venue name is required").optional(),
-    sportsType: z.nativeEnum(SportsType).optional(),
+    sportsType: z.string().optional(),
     pricePerHour: z
       .number()
       .positive("Price per hour must be positive")
