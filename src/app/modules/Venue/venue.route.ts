@@ -28,6 +28,9 @@ router.get("/group-by-sports-type", VenueController.getVenueGroupBySportsType);
 // get all my venues
 router.get("/my", auth(UserRole.VENDOR), VenueController.getAllMyVenues);
 
+// get single venue
+router.get("/:venueId", VenueController.getSingleVenue);
+
 // update venue
 router.patch(
   "/:venueId",

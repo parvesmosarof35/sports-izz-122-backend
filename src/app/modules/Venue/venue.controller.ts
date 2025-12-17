@@ -57,7 +57,10 @@ const getVenueGroupBySportsType = catchAsync(
     const filter = pick(req.query, filterField);
     const options = pick(req.query, paginationFields);
 
-    const result = await VenueService.getVenueGroupBySportsType(filter, options);
+    const result = await VenueService.getVenueGroupBySportsType(
+      filter,
+      options
+    );
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -76,6 +79,18 @@ const getAllMyVenues = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "Venues retrieved successfully!",
+    data: result,
+  });
+});
+
+// get single venue
+const getSingleVenue = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.user?.id;
+  const result = await VenueService.getSingleVenue(vendorId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Venue retrieved successfully!",
     data: result,
   });
 });
@@ -127,6 +142,7 @@ export const VenueController = {
   getAllVenues,
   getVenueGroupBySportsType,
   getAllMyVenues,
+  getSingleVenue,
   updateVenue,
   deleteVenue,
 };

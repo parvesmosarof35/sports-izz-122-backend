@@ -301,6 +301,23 @@ const getAllMyVenues = async (vendorId: string) => {
   return result;
 };
 
+// get single venue
+const getSingleVenue = async (venueId: string) => {
+  const result = await prisma.venue.findFirst({
+    where: {
+      id: venueId,
+    },
+    include: {
+      venueAvailabilities: {
+        include: {
+          scheduleSlots: true,
+        },
+      },
+    },
+  });
+  return result;
+};
+
 // update venue
 const updateVenue = async (
   vendorId: string,
@@ -523,6 +540,7 @@ export const VenueService = {
   getAllVenues,
   getVenueGroupBySportsType,
   getAllMyVenues,
+  getSingleVenue,
   updateVenue,
   deleteVenue,
 };
