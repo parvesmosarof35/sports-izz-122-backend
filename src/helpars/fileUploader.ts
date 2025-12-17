@@ -100,6 +100,8 @@ const hotelDocs = upload.array("hotelDocs", 5);
 
 const venueImage = upload.single("venueImage");
 
+const sportsTypeImage = upload.single("sportsTypeImage");
+
 const uploadMessageImages = upload.array("messageImages", 5);
 
 // Cloudinary configuration
@@ -158,6 +160,7 @@ export const uploadFile = {
   hotelDocs,
 
   venueImage,
+  sportsTypeImage,
 
   uploadMessageImages,
 
