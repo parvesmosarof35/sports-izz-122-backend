@@ -168,27 +168,37 @@ model Admin {
 }
 
 model Venue {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
-  venueName    String
-  sportsType   SportsType
-  pricePerHour Float
-  capacity     Int
-  location     String
-  venueStatus  Boolean    @default(true)
-  description  String
-  venueImage   String
-  amenities    Json? // [{ amenityName: string, amenityImage: string }, ...]
-  courtNumbers Int[] // like input 5 --> [1, 2, 3, 4, 5]
+  id                  String              @id @default(auto()) @map("_id") @db.ObjectId
+  venueName           String
+  sportsType          SportsType
+  pricePerHour        Float
+  capacity            Int
+  location            String
+  venueStatus         Boolean             @default(true)
+  description         String
+  venueImage          String
+  amenities           Json? // [{ amenityName: string, amenityImage: string }, ...]
+  courtNumbers        Int[] // like input 5 --> [1, 2, 3, 4, 5]
   venueAvailabilities VenueAvailability[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   // relationships
-  scheduleSlots       ScheduleSlot[]
-  vendorId            String?             @db.ObjectId
-  user                User?               @relation(fields: [vendorId], references: [id])
+  scheduleSlots ScheduleSlot[]
+  vendorId      String?        @db.ObjectId
+  user          User?          @relation(fields: [vendorId], references: [id])
 
   @@map("venues")
+}
+
+model SportType {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sportName   String   @unique
+  sportsImage String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("sport_types")
 }
 
 model VenueAvailability {
