@@ -106,7 +106,6 @@ const createVenueBooking = async (
   return result;
 };
 
-
 // get all specific user bookings
 const getMyVenueBookings = async (
   userId: string,
