@@ -22,6 +22,7 @@ import { refundPolicyRoute } from "../modules/Refund_Policy/refund_policy.route"
 import { newsRoomRoute } from "../modules/NewsRoom/news_room.route";
 import { venueRoute } from "../modules/Venue/venue.route";
 import { sportsTypeRoute } from "../modules/SportsType/sportsType.route";
+import { venueBookingRoutes } from "../modules/Venue_Booking/venueBooking.route";
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: "/venues",
     route: venueRoute,
+  },
+  {
+    path: "/venue-bookings",
+    route: venueBookingRoutes,
   },
   {
     path: "/sports-types",
