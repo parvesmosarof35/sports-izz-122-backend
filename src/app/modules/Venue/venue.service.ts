@@ -239,7 +239,6 @@ const getVenueGroupBySportsType = async (
     AND: filters,
   };
 
-  // get all venues with filters
   const venues = await prisma.venue.findMany({
     where,
     include: {
@@ -249,10 +248,31 @@ const getVenueGroupBySportsType = async (
         },
       },
     },
-    orderBy: {
-      sportsType: "asc",
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc",
+          },
+  });
+
+  // get all sports types to map sports images
+  const sportsTypes = await prisma.sportType.findMany({
+    select: {
+      sportName: true,
+      sportsImage: true,
     },
   });
+
+  // create a map for quick lookup
+  const sportsTypeMap = sportsTypes.reduce((acc: any, sport) => {
+    acc[sport.sportName.toUpperCase()] = sport.sportsImage;
+    return acc;
+  }, {});
 
   // group venues by sportsType
   const groupedData = venues.reduce((acc: any, venue) => {
@@ -262,6 +282,7 @@ const getVenueGroupBySportsType = async (
         sportsType,
         venues: [],
         count: 0,
+        sportsImage: sportsTypeMap[sportsType] || null,
       };
     }
     acc[sportsType].venues.push(venue);

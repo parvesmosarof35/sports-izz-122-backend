@@ -97,6 +97,7 @@ const getAllSportsTypes = async (
     data: result,
   };
 };
+
 // get single sportsType
 const getSportsTypeById = async (id: string) => {
   const result = await prisma.sportType.findUnique({
