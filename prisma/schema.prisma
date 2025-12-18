@@ -166,7 +166,7 @@ model Venue {
   courtNumbers        Int[] // like input 5 --> [1, 2, 3, 4, 5]
   EveryServiceStatus  EveryServiceStatus  @default(AVAILABLE)
   venueAvailabilities VenueAvailability[]
-  venueRating         Float               @default(0)
+  venueRating         String              @default("0")
   venueReviewCount    Int                 @default(0)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
