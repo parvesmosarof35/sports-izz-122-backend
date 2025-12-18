@@ -15,28 +15,21 @@ router.post(
   VenueBookingController.createVenueBooking
 );
 
-// User routes
+// get all specific user bookings
 router.get(
-  "/my-bookings",
+  "/specific-user-bookings",
   auth(UserRole.USER),
   VenueBookingController.getMyVenueBookings
 );
 
-// Vendor routes
+// get all specific vender bookings
 router.get(
-  "/vendor-bookings",
+  "/specific-vendor-bookings",
   auth(UserRole.VENDOR),
   VenueBookingController.getVendorVenueBookings
 );
 
-// Admin routes
-router.get(
-  "/",
-  auth(UserRole.ADMIN),
-  VenueBookingController.getAllVenueBookings
-);
-
-// Common routes (with role-based access control)
+// get single venue booking
 router.get(
   "/:bookingId",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN),
@@ -47,12 +40,6 @@ router.patch(
   "/:bookingId",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN),
   VenueBookingController.updateVenueBooking
-);
-
-router.patch(
-  "/:bookingId/cancel",
-  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN),
-  VenueBookingController.cancelVenueBooking
 );
 
 router.delete(

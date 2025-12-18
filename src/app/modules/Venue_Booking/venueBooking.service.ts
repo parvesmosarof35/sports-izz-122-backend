@@ -106,105 +106,8 @@ const createVenueBooking = async (
   return result;
 };
 
-// get all venue bookings (for admin)
-const getAllVenueBookings = async (
-  params: IVenueBookingFilterRequest,
-  options: IPaginationOptions
-) => {
-  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  const { searchTerm, ...filterData } = params;
-
-  const filters: Prisma.Venue_bookingWhereInput[] = [];
-
-  // text search
-  if (params?.searchTerm) {
-    filters.push({
-      OR: [
-        {
-          venue: {
-            venueName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-        {
-          user: {
-            fullName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-      ],
-    });
-  }
-
-  // exact field match filters
-  if (Object.keys(filterData).length > 0) {
-    filters.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
-    });
-  }
-
-  const where: Prisma.Venue_bookingWhereInput =
-    filters.length > 0 ? { AND: filters } : {};
-
-  const result = await prisma.venue_booking.findMany({
-    where,
-    include: {
-      venue: {
-        select: {
-          id: true,
-          venueName: true,
-          sportsType: true,
-          location: true,
-          venueImage: true,
-          pricePerHour: true,
-        },
-      },
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          contactNumber: true,
-        },
-      },
-      payment: true,
-    },
-    skip,
-    take: limit,
-    orderBy:
-      options.sortBy && options.sortOrder
-        ? {
-            [options.sortBy]: options.sortOrder,
-          }
-        : {
-            createdAt: "desc",
-          },
-  });
-
-  const total = await prisma.venue_booking.count({
-    where,
-  });
-
-  return {
-    meta: {
-      total,
-      page,
-      limit,
-    },
-    data: result,
-  };
-};
-
-// get my venue bookings (for user)
+// get all specific user bookings
 const getMyVenueBookings = async (
   userId: string,
   params: IVenueBookingFilterRequest,
@@ -212,51 +115,32 @@ const getMyVenueBookings = async (
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  const { searchTerm, ...filterData } = params;
+  const { filter, sportsType } = params;
 
-  const filters: Prisma.Venue_bookingWhereInput[] = [{ userId: userId }];
+  const filters: Prisma.Venue_bookingWhereInput[] = [];
 
-  // text search
-  if (params?.searchTerm) {
+  // filter user
+  filters.push({
+    userId,
+  });
+
+  // sportsType filter
+  if (sportsType) {
     filters.push({
-      OR: [
-        {
-          venue: {
-            venueName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-        {
-          user: {
-            fullName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-      ],
+      venue: {
+        sportsType: sportsType,
+      },
     });
   }
 
-  // exact field match filters
-  if (Object.keys(filterData).length > 0) {
-    filters.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
-    });
-  }
-
-  const where: Prisma.Venue_bookingWhereInput = {
-    AND: filters,
-  };
+  // calculate booking status based on date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // set to start of day
 
   const result = await prisma.venue_booking.findMany({
-    where,
+    where: {
+      AND: filters,
+    },
     include: {
       venue: {
         select: {
@@ -290,9 +174,48 @@ const getMyVenueBookings = async (
           },
   });
 
-  const total = await prisma.venue_booking.count({
-    where,
+  // bookings to determine status based on date
+  const processedBookings = result.map((booking) => {
+    const bookingDate = new Date(booking.date);
+    const daysDiff = Math.floor(
+      (today.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let status = "new_request"; // default status
+
+    if (booking.bookingStatus === BookingStatus.COMPLETED) {
+      status = "completed";
+    } else if (
+      booking.bookingStatus === BookingStatus.CONFIRMED &&
+      daysDiff > 1
+    ) {
+      status = "ongoing";
+    } else if (
+      booking.bookingStatus === BookingStatus.CONFIRMED &&
+      daysDiff <= 1
+    ) {
+      status = "new_request";
+    }
+
+    return {
+      ...booking,
+      calculatedStatus: status,
+    };
   });
+
+  // filter by status if needed
+  const filteredBookings = processedBookings.filter((booking) => {
+    if (filter) {
+      // Handle both singular and plural forms
+      if (filter === "new-requests") {
+        return booking.calculatedStatus === "new_request";
+      }
+      return booking.calculatedStatus === filter;
+    }
+    return true;
+  });
+
+  const total = filteredBookings.length;
 
   return {
     meta: {
@@ -300,11 +223,11 @@ const getMyVenueBookings = async (
       page,
       limit,
     },
-    data: result,
+    data: filteredBookings,
   };
 };
 
-// get venue bookings for vendor
+// get all specific vender bookings
 const getVendorVenueBookings = async (
   vendorId: string,
   params: IVenueBookingFilterRequest,
@@ -312,51 +235,32 @@ const getVendorVenueBookings = async (
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  const { searchTerm, ...filterData } = params;
+  const { filter, sportsType } = params;
 
-  const filters: Prisma.Venue_bookingWhereInput[] = [{ vendorId: vendorId }];
+  const filters: Prisma.Venue_bookingWhereInput[] = [];
 
-  // text search
-  if (params?.searchTerm) {
+  // filter vender
+  filters.push({
+    vendorId,
+  });
+
+  // sportsType filter
+  if (sportsType) {
     filters.push({
-      OR: [
-        {
-          venue: {
-            venueName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-        {
-          user: {
-            fullName: {
-              contains: params.searchTerm,
-              mode: "insensitive",
-            },
-          },
-        },
-      ],
+      venue: {
+        sportsType: sportsType,
+      },
     });
   }
 
-  // exact field match filters
-  if (Object.keys(filterData).length > 0) {
-    filters.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
-    });
-  }
-
-  const where: Prisma.Venue_bookingWhereInput = {
-    AND: filters,
-  };
+  // calculate booking status based on date
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // set to start of day
 
   const result = await prisma.venue_booking.findMany({
-    where,
+    where: {
+      AND: filters,
+    },
     include: {
       venue: {
         select: {
@@ -390,9 +294,48 @@ const getVendorVenueBookings = async (
           },
   });
 
-  const total = await prisma.venue_booking.count({
-    where,
+  // bookings to determine status based on date
+  const processedBookings = result.map((booking) => {
+    const bookingDate = new Date(booking.date);
+    const daysDiff = Math.floor(
+      (today.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let status = "new_request"; // default status
+
+    if (booking.bookingStatus === BookingStatus.COMPLETED) {
+      status = "completed";
+    } else if (
+      booking.bookingStatus === BookingStatus.CONFIRMED &&
+      daysDiff > 1
+    ) {
+      status = "ongoing";
+    } else if (
+      booking.bookingStatus === BookingStatus.CONFIRMED &&
+      daysDiff <= 1
+    ) {
+      status = "new_request";
+    }
+
+    return {
+      ...booking,
+      calculatedStatus: status,
+    };
   });
+
+  // filter by status if needed
+  const filteredBookings = processedBookings.filter((booking) => {
+    if (filter) {
+      // Handle both singular and plural forms
+      if (filter === "new-requests") {
+        return booking.calculatedStatus === "new_request";
+      }
+      return booking.calculatedStatus === filter;
+    }
+    return true;
+  });
+
+  const total = filteredBookings.length;
 
   return {
     meta: {
@@ -400,42 +343,16 @@ const getVendorVenueBookings = async (
       page,
       limit,
     },
-    data: result,
+    data: filteredBookings,
   };
 };
 
 // get single venue booking
-const getSingleVenueBooking = async (
-  bookingId: string,
-  userId?: string,
-  vendorId?: string
-) => {
-  const whereCondition: Prisma.Venue_bookingWhereInput = {
-    id: bookingId,
-  };
-
-  // add user or vendor filter if provided
-  if (userId) {
-    whereCondition.userId = userId;
-  } else if (vendorId) {
-    whereCondition.vendorId = vendorId;
-  }
-
-  const result = await prisma.venue_booking.findFirst({
-    where: whereCondition,
+const getSingleVenueBooking = async (bookingId: string) => {
+  const result = await prisma.venue_booking.findUnique({
+    where: { id: bookingId },
     include: {
-      venue: {
-        select: {
-          id: true,
-          venueName: true,
-          sportsType: true,
-          location: true,
-          venueImage: true,
-          pricePerHour: true,
-          capacity: true,
-          amenities: true,
-        },
-      },
+      venue: true,
       user: {
         select: {
           id: true,
@@ -527,54 +444,6 @@ const updateVenueBooking = async (
   return result;
 };
 
-// cancel venue booking
-const cancelVenueBooking = async (bookingId: string, userId: string) => {
-  // check if booking exists and belongs to user
-  const existingBooking = await prisma.venue_booking.findUnique({
-    where: { id: bookingId },
-  });
-
-  if (!existingBooking) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Venue booking not found!");
-  }
-
-  if (existingBooking.userId !== userId) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      "You don't have permission to cancel this booking!"
-    );
-  }
-
-  // check if booking can be cancelled
-  if (
-    existingBooking.bookingStatus === BookingStatus.CANCELLED ||
-    existingBooking.bookingStatus === BookingStatus.COMPLETED
-  ) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Cannot cancel this booking!");
-  }
-
-  const result = await prisma.venue_booking.update({
-    where: { id: bookingId },
-    data: {
-      bookingStatus: BookingStatus.CANCELLED,
-    },
-    include: {
-      venue: {
-        select: {
-          id: true,
-          venueName: true,
-          sportsType: true,
-          location: true,
-          venueImage: true,
-          pricePerHour: true,
-        },
-      },
-    },
-  });
-
-  return result;
-};
-
 // delete venue booking (admin only)
 const deleteVenueBooking = async (bookingId: string) => {
   // check if booking exists
@@ -595,11 +464,9 @@ const deleteVenueBooking = async (bookingId: string) => {
 
 export const VenueBookingService = {
   createVenueBooking,
-  getAllVenueBookings,
   getMyVenueBookings,
   getVendorVenueBookings,
   getSingleVenueBooking,
   updateVenueBooking,
-  cancelVenueBooking,
   deleteVenueBooking,
 };

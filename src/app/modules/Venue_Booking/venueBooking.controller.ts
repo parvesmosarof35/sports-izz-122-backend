@@ -6,6 +6,7 @@ import { VenueBookingService } from "./venueBooking.service";
 import { VenueBookingValidation } from "./venueBooking.validation";
 import { pick } from "../../../shared/pick";
 import { paginationFields } from "../../../constants/pagination";
+import { filterField } from "./venueBooking.constant";
 
 // create venue booking
 const createVenueBooking = catchAsync(async (req: Request, res: Response) => {
@@ -27,46 +28,15 @@ const createVenueBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// get all venue bookings (admin)
-const getAllVenueBookings = catchAsync(async (req: Request, res: Response) => {
-  const filters = pick(req.query, [
-    "searchTerm",
-    "bookingStatus",
-    "date",
-    "venueId",
-    "userId",
-    "vendorId",
-  ]);
-  const options = pick(req.query, paginationFields);
-
-  const result = await VenueBookingService.getAllVenueBookings(
-    filters as any,
-    options
-  );
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Venue bookings retrieved successfully!",
-    meta: result.meta,
-    data: result.data,
-  });
-});
-
-// get my venue bookings (user)
+// get all specific user bookings
 const getMyVenueBookings = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  const filters = pick(req.query, [
-    "searchTerm",
-    "bookingStatus",
-    "date",
-    "venueId",
-  ]);
+  const filters = pick(req.query, filterField);
   const options = pick(req.query, paginationFields);
 
   const result = await VenueBookingService.getMyVenueBookings(
     userId,
-    filters as any,
+    filters,
     options
   );
 
@@ -79,22 +49,16 @@ const getMyVenueBookings = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// get vendor venue bookings (vendor)
+// get all specific vender bookings
 const getVendorVenueBookings = catchAsync(
   async (req: Request, res: Response) => {
     const vendorId = req.user?.id;
-    const filters = pick(req.query, [
-      "searchTerm",
-      "bookingStatus",
-      "date",
-      "venueId",
-      "userId",
-    ]);
+    const filters = pick(req.query, filterField);
     const options = pick(req.query, paginationFields);
 
     const result = await VenueBookingService.getVendorVenueBookings(
       vendorId,
-      filters as any,
+      filters,
       options
     );
 
@@ -111,25 +75,9 @@ const getVendorVenueBookings = catchAsync(
 // get single venue booking
 const getSingleVenueBooking = catchAsync(
   async (req: Request, res: Response) => {
-    const { bookingId } = req.params;
-    const userId = req.user?.id;
-    const userRole = req.user?.role;
+    const bookingId = req.params.bookingId;
 
-    let result;
-    if (userRole === "ADMIN") {
-      result = await VenueBookingService.getSingleVenueBooking(bookingId);
-    } else if (userRole === "VENDOR") {
-      result = await VenueBookingService.getSingleVenueBooking(
-        bookingId,
-        undefined,
-        userId
-      );
-    } else {
-      result = await VenueBookingService.getSingleVenueBooking(
-        bookingId,
-        userId
-      );
-    }
+    const result = await VenueBookingService.getSingleVenueBooking(bookingId);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
@@ -173,23 +121,6 @@ const updateVenueBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// cancel venue booking
-const cancelVenueBooking = catchAsync(async (req: Request, res: Response) => {
-  const { bookingId } = req.params;
-  const userId = req.user?.id;
-
-  const result = await VenueBookingService.cancelVenueBooking(
-    bookingId,
-    userId
-  );
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Venue booking cancelled successfully!",
-    data: result,
-  });
-});
 
 // delete venue booking (admin only)
 const deleteVenueBooking = catchAsync(async (req: Request, res: Response) => {
@@ -207,11 +138,9 @@ const deleteVenueBooking = catchAsync(async (req: Request, res: Response) => {
 
 export const VenueBookingController = {
   createVenueBooking,
-  getAllVenueBookings,
   getMyVenueBookings,
   getVendorVenueBookings,
   getSingleVenueBooking,
   updateVenueBooking,
-  cancelVenueBooking,
   deleteVenueBooking,
 };

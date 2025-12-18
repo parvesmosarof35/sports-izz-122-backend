@@ -1,12 +1,8 @@
 import { BookingStatus } from "@prisma/client";
 
 export type IVenueBookingFilterRequest = {
-  searchTerm?: string | undefined;
-  bookingStatus?: BookingStatus | undefined;
-  date?: string | undefined;
-  venueId?: string | undefined;
-  userId?: string | undefined;
-  vendorId?: string | undefined;
+  filter?: string | undefined;
+  sportsType?: string | undefined;
 };
 
 export interface IVenueBooking {
