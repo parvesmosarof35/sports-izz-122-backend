@@ -165,6 +165,8 @@ model Venue {
   amenities           Json? // [{ amenityName: string, amenityImage: string }, ...]
   courtNumbers        Int[] // like input 5 --> [1, 2, 3, 4, 5]
   venueAvailabilities VenueAvailability[]
+  venueRating         Float               @default(0)
+  venueReviewCount    Int                 @default(0)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -173,6 +175,7 @@ model Venue {
   vendorId      String?         @db.ObjectId
   user          User?           @relation(fields: [vendorId], references: [id])
   venueBookings Venue_booking[]
+  reviews       Review[]
 
   @@map("venues")
 }
@@ -363,10 +366,12 @@ model Review {
   updatedAt  DateTime @updatedAt
 
   // relationships
-  user   User    @relation(fields: [userId], references: [id])
-  userId String  @db.ObjectId
-  room   Room?   @relation(fields: [roomId], references: [id])
-  roomId String? @db.ObjectId
+  user    User    @relation(fields: [userId], references: [id])
+  userId  String  @db.ObjectId
+  venueId String?
+  venue   Venue?  @relation(fields: [venueId], references: [id])
+  room    Room?   @relation(fields: [roomId], references: [id])
+  roomId  String? @db.ObjectId
 
   @@map("reviews")
 }
