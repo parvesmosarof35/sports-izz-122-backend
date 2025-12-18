@@ -434,42 +434,6 @@ model CustomerContact {
   @@map("customer_contacts")
 }
 
-model Newsroom {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  tagline     String
-  title       String
-  summary     String
-  category    String
-  country     String
-  image       String[]
-  publishedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  author      String?
-  isPublished Boolean  @default(true)
-}
-
-model Human_Rights {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Cancel_Reservation {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Refund_Policy {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  description String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
 model About_App {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   description String

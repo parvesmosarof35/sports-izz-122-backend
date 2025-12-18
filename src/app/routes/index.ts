@@ -13,13 +13,8 @@ import { termsConditionRoute } from "../modules/Terms_Condition/terms.route";
 import { messageRoutes } from "../modules/Message/message.route";
 import { phoneRoute } from "../modules/Setting/PhoneNumberVerify/phone.route";
 import { paymentRoutes } from "../modules/Payment/payment.route";
-import { financeRoutes } from "../modules/Finances/finance.route";
 import { supportRoutes } from "../modules/Support/support.route";
 import { faqRoutes } from "../modules/Faq/faq.routre";
-import { humanRightRoute } from "../modules/Human_Rights/humanRight.route";
-import { cancelReservationRoute } from "../modules/Cancel_Reservation/cancel_reservation.route";
-import { refundPolicyRoute } from "../modules/Refund_Policy/refund_policy.route";
-import { newsRoomRoute } from "../modules/NewsRoom/news_room.route";
 import { venueRoute } from "../modules/Venue/venue.route";
 import { sportsTypeRoute } from "../modules/SportsType/sportsType.route";
 import { venueBookingRoutes } from "../modules/Venue_Booking/venueBooking.route";
@@ -69,22 +64,6 @@ const moduleRoutes = [
     route: faqRoutes,
   },
   {
-    path: "/news-rooms",
-    route: newsRoomRoute,
-  },
-  {
-    path: "/human-rights",
-    route: humanRightRoute,
-  },
-  {
-    path: "/cancel-reservations",
-    route: cancelReservationRoute,
-  },
-  {
-    path: "/refund-policies",
-    route: refundPolicyRoute,
-  },
-  {
     path: "/terms-conditions",
     route: termsConditionRoute,
   },
@@ -108,11 +87,6 @@ const moduleRoutes = [
     path: "/payments",
     route: paymentRoutes,
   },
-  {
-    path: "/finances",
-    route: financeRoutes,
-  },
-
   {
     path: "/supports",
     route: supportRoutes,
