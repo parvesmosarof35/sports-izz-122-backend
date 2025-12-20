@@ -85,8 +85,8 @@ const getAllMyVenues = catchAsync(async (req: Request, res: Response) => {
 
 // get single venue
 const getSingleVenue = catchAsync(async (req: Request, res: Response) => {
-  const vendorId = req.user?.id;
-  const result = await VenueService.getSingleVenue(vendorId);
+  const venueId = req.params.venueId;
+  const result = await VenueService.getSingleVenue(venueId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

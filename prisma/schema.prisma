@@ -136,6 +136,13 @@ model User {
   venues         Venue[]
   venueBookings  Venue_booking[]
 
+  // gamification relationships
+  userProfile      UserProfile?
+  xpHistory        XPHistory[]
+  userBadges       UserBadge[]
+  userAchievements UserAchievement[]
+  userStreaks      UserStreak[]
+
   @@map("users")
 }
 
@@ -547,4 +554,196 @@ model Support {
   userId String? @db.ObjectId
 
   @@map("supports")
+}
+
+// ---------------------------------------------------------
+//  GAMIFICATION MODELS
+// ---------------------------------------------------------
+
+enum BadgeType {
+  FIRST_BOOKING
+  REVIEW_MASTER
+  REFER_CHAMPION
+  STREAK_MASTER
+  CHALLENGE_WINNER
+  ELITE_USER
+  VIP_MEMBER
+  SPEED_BOOKER
+  LOYAL_CUSTOMER
+  EXPLORER
+}
+
+enum AchievementType {
+  FIRST_BOOKING
+  MULTIPLE_SPORTS
+  REFERRAL_CHAMP
+  STREAK_MASTER
+  CHALLENGE_CHAMP
+  ELITE_STATUS
+}
+
+enum GamificationAction {
+  BOOKING
+  REVIEW
+  REFERRAL
+  CHALLENGE_COMPLETE
+  DAILY_LOGIN
+}
+
+model UserProfile {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  currentLevel   Int      @default(1)
+  currentXP      Int      @default(0)
+  totalXP        Int      @default(0)
+  atlasPoints    Int      @default(0)
+  streakDays     Int      @default(0)
+  lastActiveDate DateTime @default(now())
+  bookingCount   Int      @default(0)
+  reviewCount    Int      @default(0)
+  referralCount  Int      @default(0)
+  challengeCount Int      @default(0)
+  nextLevelXP    Int      @default(100)
+  levelTitle     String   @default("Beginner")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // relations
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
+}
+
+model XPHistory {
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  xpEarned    Int
+  actionType  GamificationAction
+  description String?
+  bonusXP     Int                @default(0)
+  totalXP     Int
+  createdAt   DateTime           @default(now())
+
+  // relations
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("xp_history")
+}
+
+model Badge {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String
+  iconUrl      String
+  badgeType    BadgeType
+  isActive     Boolean   @default(true)
+  xpReward     Int       @default(0)
+  pointsReward Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // relations
+  userBadges UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  earnedAt    DateTime @default(now())
+  isDisplayed Boolean  @default(true)
+
+  // relations
+  userId  String @db.ObjectId
+  user    User   @relation(fields: [userId], references: [id])
+  badgeId String @db.ObjectId
+  badge   Badge  @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
+
+model Achievement {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String
+  achievementType AchievementType
+  targetValue     Int
+  currentProgress Int             @default(0)
+  isActive        Boolean         @default(true)
+  xpReward        Int             @default(0)
+  pointsReward    Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  userAchievements UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  progress    Int       @default(0)
+  isCompleted Boolean   @default(false)
+  completedAt DateTime?
+  lastUpdated DateTime  @default(now())
+
+  // Relations
+  userId        String      @db.ObjectId
+  user          User        @relation(fields: [userId], references: [id])
+  achievementId String      @db.ObjectId
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+model UserStreak {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  streakType     String // "booking", "login", "review"
+  currentStreak  Int      @default(0)
+  bestStreak     Int      @default(0)
+  lastActiveDate DateTime @default(now())
+  bonusXP        Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, streakType])
+  @@map("user_streaks")
+}
+
+model Level {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  level       Int      @unique
+  title       String
+  minXP       Int
+  maxXP       Int
+  benefits    Json // ["discount_5%", "priority_access", "vip_perks"]
+  badgeReward String?  @db.ObjectId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("levels")
+}
+
+model GamificationSettings {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  xpPerBooking         Int      @default(10)
+  xpPerReview          Int      @default(5)
+  xpPerReferral        Int      @default(50)
+  xpPerChallenge       Int      @default(25)
+  xpPerDailyLogin      Int      @default(2)
+  streakBonusXP        Int      @default(5)
+  referralPointsReward Int      @default(10)
+  pointsToXPConversion Float    @default(0.1)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("gamification_settings")
 }
