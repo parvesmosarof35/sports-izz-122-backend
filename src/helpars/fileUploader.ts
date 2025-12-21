@@ -102,6 +102,8 @@ const venueImage = upload.single("venueImage");
 
 const sportsTypeImage = upload.single("sportsTypeImage");
 
+const iconUrl = upload.single("iconUrl"); // badge icon
+
 const uploadMessageImages = upload.array("messageImages", 5);
 
 // Cloudinary configuration
@@ -165,4 +167,6 @@ export const uploadFile = {
   uploadMessageImages,
 
   uploadToCloudinary,
+
+  iconUrl,
 };

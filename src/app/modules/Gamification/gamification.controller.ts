@@ -2,12 +2,13 @@ import { Request, Response } from "express";
 import httpStatus from "http-status";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
-import { GamificationService } from "./gamification.service.functional";
+import { GamificationService } from "./gamification.service";
 import { pick } from "../../../shared/pick";
 import { gamificationFilterableFields } from "./gamification.constant";
 import { paginationFields } from "../../../constants/pagination";
+import { uploadFile } from "../../../helpars/fileUploader";
 
-// Get user gamification profile
+// get user gamification profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const result = await GamificationService.getUserProfile(userId);
@@ -20,7 +21,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Award XP to user
+// award XP to user
 const awardXP = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const { action, description } = req.body;
@@ -34,13 +35,15 @@ const awardXP = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get leaderboard
+// get leaderboard
 const getLeaderboard = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, gamificationFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
-  const limit = paginationOptions.limit ? parseInt(paginationOptions.limit as string) : 10;
+  const limit = paginationOptions.limit
+    ? parseInt(paginationOptions.limit as string)
+    : 10;
   const sportType = filters.sportType as string;
-  
+
   const result = await GamificationService.getLeaderboard(limit, sportType);
 
   sendResponse(res, {
@@ -51,11 +54,15 @@ const getLeaderboard = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Redeem points
+// redeem points
 const redeemPoints = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const { pointsToRedeem, rewardType } = req.body;
-  const result = await GamificationService.redeemPoints(userId, pointsToRedeem, rewardType);
+  const result = await GamificationService.redeemPoints(
+    userId,
+    pointsToRedeem,
+    rewardType
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -65,7 +72,7 @@ const redeemPoints = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get user badges
+// get user badges
 const getUserBadges = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const result = await GamificationService.getUserBadges(userId);
@@ -78,7 +85,7 @@ const getUserBadges = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get user achievements
+// get user achievements
 const getUserAchievements = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const result = await GamificationService.getUserAchievements(userId);
@@ -91,7 +98,7 @@ const getUserAchievements = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get user streaks
+// get user streaks
 const getUserStreaks = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const result = await GamificationService.getUserStreaks(userId);
@@ -104,11 +111,14 @@ const getUserStreaks = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Get XP history
+// get XP history
 const getXPHistory = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const paginationOptions = pick(req.query, paginationFields);
-  const result = await GamificationService.getXPHistory(userId, paginationOptions);
+  const result = await GamificationService.getXPHistory(
+    userId,
+    paginationOptions
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -118,9 +128,18 @@ const getXPHistory = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Admin: Create badge
+// admin: create badge
 const createBadge = catchAsync(async (req: Request, res: Response) => {
   const badgeData = req.body;
+
+  // Upload icon to Cloudinary if file exists
+  if (req.file) {
+    const uploadedIcon = await uploadFile.uploadToCloudinary(req.file);
+    if (uploadedIcon?.secure_url) {
+      badgeData.iconUrl = uploadedIcon.secure_url;
+    }
+  }
+
   const result = await GamificationService.createBadge(badgeData);
 
   sendResponse(res, {
@@ -131,7 +150,7 @@ const createBadge = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Admin: Create achievement
+// admin: create achievement
 const createAchievement = catchAsync(async (req: Request, res: Response) => {
   const achievementData = req.body;
   const result = await GamificationService.createAchievement(achievementData);
@@ -144,30 +163,36 @@ const createAchievement = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// Admin: Update gamification settings
-const updateGamificationSettings = catchAsync(async (req: Request, res: Response) => {
-  const settingsData = req.body;
-  const result = await GamificationService.updateGamificationSettings(settingsData);
+// admin: upsert gamification settings
+const updateGamificationSettings = catchAsync(
+  async (req: Request, res: Response) => {
+    const settingsData = req.body;
+    const result = await GamificationService.updateGamificationSettings(
+      settingsData
+    );
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Gamification settings updated successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Gamification settings updated successfully",
+      data: result,
+    });
+  }
+);
 
-// Admin: Get gamification settings
-const getGamificationSettings = catchAsync(async (req: Request, res: Response) => {
-  const result = await GamificationService.getGamificationSettings();
+// admin: get gamification settings
+const getGamificationSettings = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await GamificationService.getGamificationSettings();
 
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Gamification settings retrieved successfully",
-    data: result,
-  });
-});
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: "Gamification settings retrieved successfully",
+      data: result,
+    });
+  }
+);
 
 export const GamificationController = {
   getUserProfile,

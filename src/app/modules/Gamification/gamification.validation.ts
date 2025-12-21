@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { GamificationAction, BadgeType, AchievementType } from "./gamification.interface";
+import {
+  GamificationAction,
+  BadgeType,
+  AchievementType,
+} from "./gamification.interface";
 
 const awardXPZodSchema = z.object({
   body: z.object({
@@ -28,15 +32,21 @@ const redeemPointsZodSchema = z.object({
 
 const createBadgeZodSchema = z.object({
   body: z.object({
-    name: z.string({
-      required_error: "Badge name is required",
-    }).min(1, "Badge name cannot be empty"),
-    description: z.string({
-      required_error: "Badge description is required",
-    }).min(1, "Badge description cannot be empty"),
-    iconUrl: z.string({
-      required_error: "Badge icon URL is required",
-    }).url("Please provide a valid URL for the icon"),
+    name: z
+      .string({
+        required_error: "Badge name is required",
+      })
+      .min(1, "Badge name cannot be empty"),
+    description: z
+      .string({
+        required_error: "Badge description is required",
+      })
+      .min(1, "Badge description cannot be empty"),
+    // iconUrl: z
+    //   .string({
+    //     required_error: "Badge icon URL is required",
+    //   })
+    //   .url("Please provide a valid URL for the icon"),
     badgeType: z.nativeEnum(BadgeType, {
       required_error: "Badge type is required",
       invalid_type_error: "Invalid badge type",
@@ -60,12 +70,16 @@ const createBadgeZodSchema = z.object({
 
 const createAchievementZodSchema = z.object({
   body: z.object({
-    name: z.string({
-      required_error: "Achievement name is required",
-    }).min(1, "Achievement name cannot be empty"),
-    description: z.string({
-      required_error: "Achievement description is required",
-    }).min(1, "Achievement description cannot be empty"),
+    name: z
+      .string({
+        required_error: "Achievement name is required",
+      })
+      .min(1, "Achievement name cannot be empty"),
+    description: z
+      .string({
+        required_error: "Achievement description is required",
+      })
+      .min(1, "Achievement description cannot be empty"),
     achievementType: z.nativeEnum(AchievementType, {
       required_error: "Achievement type is required",
       invalid_type_error: "Invalid achievement type",
@@ -158,8 +172,14 @@ const updateSettingsZodSchema = z.object({
 const updateBadgeZodSchema = z.object({
   body: z.object({
     name: z.string().min(1, "Badge name cannot be empty").optional(),
-    description: z.string().min(1, "Badge description cannot be empty").optional(),
-    iconUrl: z.string().url("Please provide a valid URL for the icon").optional(),
+    description: z
+      .string()
+      .min(1, "Badge description cannot be empty")
+      .optional(),
+    iconUrl: z
+      .string()
+      .url("Please provide a valid URL for the icon")
+      .optional(),
     isActive: z.boolean().optional(),
     xpReward: z
       .number()
@@ -177,7 +197,10 @@ const updateBadgeZodSchema = z.object({
 const updateAchievementZodSchema = z.object({
   body: z.object({
     name: z.string().min(1, "Achievement name cannot be empty").optional(),
-    description: z.string().min(1, "Achievement description cannot be empty").optional(),
+    description: z
+      .string()
+      .min(1, "Achievement description cannot be empty")
+      .optional(),
     targetValue: z
       .number()
       .positive("Target value must be greater than 0")

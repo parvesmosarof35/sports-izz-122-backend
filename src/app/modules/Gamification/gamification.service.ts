@@ -7,6 +7,7 @@ import {
   GamificationAction,
   BadgeType,
   AchievementType,
+  GamificationSettings,
 } from "./gamification.interface";
 
 const prisma = new PrismaClient();
@@ -79,7 +80,7 @@ const awardXP = async (
   };
 };
 
-// Get user gamification profile
+// get user gamification profile
 const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
   const profile = await prisma.userProfile.findUnique({
     where: { userId },
@@ -112,8 +113,11 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
   };
 };
 
-// Leaderboard
-const getLeaderboard = async (limit: number = 10, sportType?: string): Promise<any[]> => {
+// leaderboard
+const getLeaderboard = async (
+  limit: number = 10,
+  sportType?: string
+): Promise<any[]> => {
   const whereClause = sportType
     ? { user: { venues: { some: { sportsType } } } }
     : {};
@@ -139,7 +143,7 @@ const getLeaderboard = async (limit: number = 10, sportType?: string): Promise<a
   }));
 };
 
-// Redeem points
+// redeem points
 const redeemPoints = async (
   userId: string,
   pointsToRedeem: number,
@@ -166,7 +170,7 @@ const redeemPoints = async (
   };
 };
 
-// Helper functions
+// helper functions
 const getGamificationSettings = async () => {
   let settings = await prisma.gamificationSettings.findFirst();
   if (!settings) {
@@ -175,6 +179,7 @@ const getGamificationSettings = async () => {
   return settings;
 };
 
+// calculate streak bonus
 const calculateStreakBonus = async (
   userId: string,
   action: GamificationAction
@@ -196,6 +201,7 @@ const calculateStreakBonus = async (
   return streak.currentStreak * settings.streakBonusXP;
 };
 
+// update user profile
 const updateUserProfile = async (
   userId: string,
   xp: number,
@@ -227,6 +233,7 @@ const updateUserProfile = async (
   return profile;
 };
 
+// record xp history
 const recordXPHistory = async (
   userId: string,
   baseXP: number,
@@ -247,6 +254,7 @@ const recordXPHistory = async (
   });
 };
 
+// check level up
 const checkLevelUp = async (userId: string, currentXP: number) => {
   const currentLevel = await prisma.level.findFirst({
     where: { minXP: { lte: currentXP }, maxXP: { gte: currentXP } },
@@ -275,6 +283,7 @@ const checkLevelUp = async (userId: string, currentXP: number) => {
   return null;
 };
 
+// check badge unlocks
 const checkBadgeUnlocks = async (
   userId: string,
   action: GamificationAction
@@ -344,6 +353,7 @@ const checkBadgeUnlocks = async (
   return newBadges;
 };
 
+// update achievements
 const updateAchievements = async (
   userId: string,
   action: GamificationAction
@@ -411,11 +421,7 @@ const updateAchievements = async (
 
       // Award completion rewards
       if (isCompleted && !userAchievement.isCompleted) {
-        await updateUserProfile(
-          userId,
-          achievement.xpReward,
-          "DAILY_LOGIN"
-        );
+        await updateUserProfile(userId, achievement.xpReward, "DAILY_LOGIN");
         await prisma.userProfile.update({
           where: { userId },
           data: { atlasPoints: { increment: achievement.pointsReward } },
@@ -427,6 +433,7 @@ const updateAchievements = async (
   return updates;
 };
 
+// create user profile
 const createUserProfile = async (
   userId: string
 ): Promise<UserProfileResponse> => {
@@ -470,6 +477,7 @@ const getUserBadges = async (userId: string): Promise<BadgeResponse[]> => {
   }));
 };
 
+// get user achievements
 const getUserAchievements = async (
   userId: string
 ): Promise<AchievementProgress[]> => {
@@ -490,6 +498,7 @@ const getUserAchievements = async (
   }));
 };
 
+// get user streaks
 const getUserStreaks = async (userId: string): Promise<any[]> => {
   return await prisma.userStreak.findMany({
     where: { userId },
@@ -497,8 +506,11 @@ const getUserStreaks = async (userId: string): Promise<any[]> => {
   });
 };
 
-// Additional methods needed by controller
-const getXPHistory = async (userId: string, paginationOptions?: any): Promise<any> => {
+// additional methods needed by controller
+const getXPHistory = async (
+  userId: string,
+  paginationOptions?: any
+): Promise<any> => {
   const limit = paginationOptions?.limit
     ? parseInt(paginationOptions.limit)
     : 10;
@@ -526,19 +538,33 @@ const getXPHistory = async (userId: string, paginationOptions?: any): Promise<an
   };
 };
 
+// admin: create badge
 const createBadge = async (badgeData: any): Promise<any> => {
+  const { iconUrl, ...otherData } = badgeData;
+
+  const data = {
+    ...otherData,
+    iconUrl:
+      iconUrl ||
+      "https://res.cloudinary.com/your-cloud/image/upload/v1/default-badge.png",
+  };
+
   return await prisma.badge.create({
-    data: badgeData,
+    data,
   });
 };
 
+// create achievement
 const createAchievement = async (achievementData: any): Promise<any> => {
   return await prisma.achievement.create({
     data: achievementData,
   });
 };
 
-const updateGamificationSettings = async (settingsData: any): Promise<any> => {
+// upsert gamification settings
+const updateGamificationSettings = async (
+  settingsData: any
+): Promise<GamificationSettings> => {
   const existing = await prisma.gamificationSettings.findFirst();
 
   if (existing) {
@@ -553,7 +579,6 @@ const updateGamificationSettings = async (settingsData: any): Promise<any> => {
   }
 };
 
-// Export all functions
 export const GamificationService = {
   awardXP,
   getUserProfile,
@@ -566,5 +591,5 @@ export const GamificationService = {
   createBadge,
   createAchievement,
   updateGamificationSettings,
-  getGamificationSettings
+  getGamificationSettings,
 };

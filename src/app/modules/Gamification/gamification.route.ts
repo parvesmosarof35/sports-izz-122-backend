@@ -4,6 +4,8 @@ import { gamificationValidation } from "./gamification.validation";
 import auth from "../../middlewares/auth";
 import { GamificationController } from "./gamification.controller";
 import { UserRole } from "@prisma/client";
+import { uploadFile } from "../../../helpars/fileUploader";
+import { parseBodyData } from "../../middlewares/parseNestedJson";
 
 const router = express.Router();
 
@@ -58,10 +60,12 @@ router.post(
   GamificationController.redeemPoints
 );
 
-// Admin routes
+// admin: create badge
 router.post(
   "/badges",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  uploadFile.iconUrl,
+  parseBodyData,
   validateRequest(gamificationValidation.createBadgeZodSchema),
   GamificationController.createBadge
 );
