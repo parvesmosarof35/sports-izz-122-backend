@@ -70,6 +70,7 @@ router.post(
   GamificationController.createBadge
 );
 
+// admin: create achievement
 router.post(
   "/achievements",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -83,6 +84,7 @@ router.get(
   GamificationController.getGamificationSettings
 );
 
+// admin: upsert settings
 router.patch(
   "/settings",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
