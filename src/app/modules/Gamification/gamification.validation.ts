@@ -42,11 +42,6 @@ const createBadgeZodSchema = z.object({
         required_error: "Badge description is required",
       })
       .min(1, "Badge description cannot be empty"),
-    // iconUrl: z
-    //   .string({
-    //     required_error: "Badge icon URL is required",
-    //   })
-    //   .url("Please provide a valid URL for the icon"),
     badgeType: z.nativeEnum(BadgeType, {
       required_error: "Badge type is required",
       invalid_type_error: "Invalid badge type",

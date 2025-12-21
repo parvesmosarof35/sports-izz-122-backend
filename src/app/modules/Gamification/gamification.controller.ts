@@ -7,6 +7,7 @@ import { pick } from "../../../shared/pick";
 import { gamificationFilterableFields } from "./gamification.constant";
 import { paginationFields } from "../../../constants/pagination";
 import { uploadFile } from "../../../helpars/fileUploader";
+import ApiError from "../../../errors/ApiErrors";
 
 // get user gamification profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
@@ -132,11 +133,15 @@ const getXPHistory = catchAsync(async (req: Request, res: Response) => {
 const createBadge = catchAsync(async (req: Request, res: Response) => {
   const badgeData = req.body;
 
-  // Upload icon to Cloudinary if file exists
+  // upload badge icon
   if (req.file) {
     const uploadedIcon = await uploadFile.uploadToCloudinary(req.file);
     if (uploadedIcon?.secure_url) {
       badgeData.iconUrl = uploadedIcon.secure_url;
+    }
+  } else {
+    if (!badgeData.iconUrl) {
+      throw new ApiError(httpStatus.BAD_REQUEST, "Badge icon is required.");
     }
   }
 
