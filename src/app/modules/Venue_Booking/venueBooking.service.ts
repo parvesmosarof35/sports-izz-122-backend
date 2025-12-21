@@ -7,7 +7,8 @@ import {
   IVenueBookingPayload,
   IVenueBookingUpdate,
 } from "./venueBooking.interface";
-import { BookingStatus, Prisma } from "@prisma/client";
+import { BookingStatus, Prisma, GamificationAction } from "@prisma/client";
+import { GamificationService } from "../Gamification/gamification.service";
 import { IPaginationOptions } from "../../../interfaces/paginations";
 import { paginationHelpers } from "../../../helpars/paginationHelper";
 
@@ -102,6 +103,18 @@ const createVenueBooking = async (
       },
     },
   });
+
+  // Award XP for booking
+  try {
+    await GamificationService.awardXP(
+      userId,
+      "BOOKING" as any,
+      `Venue booking: ${venue.venueName}`
+    );
+  } catch (error) {
+    // Log error but don't fail booking
+    console.error("Gamification award failed:", error);
+  }
 
   return result;
 };
