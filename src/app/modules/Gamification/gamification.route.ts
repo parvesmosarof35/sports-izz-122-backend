@@ -22,6 +22,7 @@ router.get(
   GamificationController.getUserBadges
 );
 
+// get user achievements
 router.get(
   "/achievements",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -34,6 +35,7 @@ router.get(
   GamificationController.getUserStreaks
 );
 
+// get xp history
 router.get(
   "/xp-history",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -46,6 +48,7 @@ router.get(
   GamificationController.getLeaderboard
 );
 
+// award xp
 router.post(
   "/award-xp",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
@@ -78,6 +81,7 @@ router.post(
   GamificationController.createAchievement
 );
 
+// admin: get settings
 router.get(
   "/settings",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),

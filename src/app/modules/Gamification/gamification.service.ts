@@ -42,14 +42,14 @@ const awardXP = async (
       break;
   }
 
-  // Calculate streak bonus
+  // calculate streak bonus
   const streakBonus = await calculateStreakBonus(userId, action);
   const totalXP = baseXP + streakBonus;
 
-  // Update user profile
+  // update user profile
   const userProfile = await updateUserProfile(userId, totalXP, action);
 
-  // Record XP history
+  // record XP history
   await recordXPHistory(
     userId,
     baseXP,
@@ -59,10 +59,10 @@ const awardXP = async (
     description
   );
 
-  // Check for level up
+  // check for level up
   const levelUp = await checkLevelUp(userId, userProfile.currentXP);
 
-  // Check for new badges and achievements
+  // check for new badges and achievements
   const newBadges = await checkBadgeUnlocks(userId, action);
   const achievementUpdates = await updateAchievements(userId, action);
 
@@ -174,7 +174,9 @@ const redeemPoints = async (
 const getGamificationSettings = async () => {
   let settings = await prisma.gamificationSettings.findFirst();
   if (!settings) {
-    settings = await prisma.gamificationSettings.create({});
+    settings = await prisma.gamificationSettings.create({
+      data: {},
+    });
   }
   return settings;
 };
@@ -184,6 +186,11 @@ const calculateStreakBonus = async (
   userId: string,
   action: GamificationAction
 ): Promise<number> => {
+  // Skip streak calculation for now - return 0
+  return 0;
+  
+  // TODO: Implement streak tracking later
+  /*
   const streakType =
     action === "DAILY_LOGIN"
       ? "login"
@@ -192,13 +199,19 @@ const calculateStreakBonus = async (
       : "review";
 
   const streak = await prisma.userStreak.findUnique({
-    where: { userId_streakType: { userId, streakType } },
+    where: {
+      userId_streakType: {
+        userId,
+        streakType,
+      },
+    },
   });
 
   if (!streak) return 0;
 
   const settings = await getGamificationSettings();
   return streak.currentStreak * settings.streakBonusXP;
+  */
 };
 
 // update user profile
@@ -332,11 +345,14 @@ const checkBadgeUnlocks = async (
         data: { userId, badgeId: badge.id },
       });
 
-      // Award badge XP and points
-      await updateUserProfile(userId, badge.xpReward, "DAILY_LOGIN");
+      // Award badge XP and points (separate from action XP)
       await prisma.userProfile.update({
         where: { userId },
-        data: { atlasPoints: { increment: badge.pointsReward } },
+        data: {
+          currentXP: { increment: badge.xpReward },
+          totalXP: { increment: badge.xpReward },
+          atlasPoints: { increment: badge.pointsReward },
+        },
       });
 
       newBadges.push({
@@ -421,10 +437,13 @@ const updateAchievements = async (
 
       // Award completion rewards
       if (isCompleted && !userAchievement.isCompleted) {
-        await updateUserProfile(userId, achievement.xpReward, "DAILY_LOGIN");
         await prisma.userProfile.update({
           where: { userId },
-          data: { atlasPoints: { increment: achievement.pointsReward } },
+          data: {
+            currentXP: { increment: achievement.xpReward },
+            totalXP: { increment: achievement.xpReward },
+            atlasPoints: { increment: achievement.pointsReward },
+          },
         });
       }
     }

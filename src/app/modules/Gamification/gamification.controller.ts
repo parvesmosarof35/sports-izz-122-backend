@@ -25,6 +25,11 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 // award XP to user
 const awardXP = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
+  
+  if (!userId) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
+  }
+  
   const { action, description } = req.body;
   const result = await GamificationService.awardXP(userId, action, description);
 
@@ -112,7 +117,7 @@ const getUserStreaks = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// get XP history
+// get xp history
 const getXPHistory = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.userId;
   const paginationOptions = pick(req.query, paginationFields);
