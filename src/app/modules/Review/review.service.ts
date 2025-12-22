@@ -64,12 +64,12 @@ const createVenueReview = async (
       `Venue review: ${venueId} - Rating: ${rating}`
     );
 
-    console.log("Review gamification award completed:", {
-      xpEarned: gamificationResult.xpEarned,
-      newLevel: gamificationResult.newLevel,
-      newBadges: gamificationResult.newBadges.length,
-      achievementUpdates: gamificationResult.achievementUpdates.length,
-    });
+    // console.log("Review gamification award completed:", {
+    //   xpEarned: gamificationResult.xpEarned,
+    //   newLevel: gamificationResult.newLevel,
+    //   newBadges: gamificationResult.newBadges.length,
+    //   achievementUpdates: gamificationResult.achievementUpdates.length,
+    // });
   } catch (error) {
     // Log error but don't fail review creation
     console.error("Review gamification award failed:", error);
