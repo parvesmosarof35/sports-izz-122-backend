@@ -118,23 +118,58 @@ const getLeaderboard = async (
   limit: number = 10,
   sportType?: string
 ): Promise<any[]> => {
-  const whereClause = sportType
-    ? { user: { venues: { some: { sportsType } } } }
-    : {};
+  let topUsers;
 
-  const topUsers = await prisma.userProfile.findMany({
-    where: whereClause,
-    include: {
-      user: {
-        select: {
-          fullName: true,
-          profileImage: true,
+  if (sportType) {
+    // Filter users who have venues with the specified sportType
+    const usersWithSportType = await prisma.user.findMany({
+      where: {
+        venues: {
+          some: {
+            sportsType: sportType
+          }
+        }
+      },
+      select: {
+        id: true
+      }
+    });
+
+    const userIds = usersWithSportType.map(user => user.id);
+
+    // Get user profiles for those users
+    topUsers = await prisma.userProfile.findMany({
+      where: {
+        userId: {
+          in: userIds
+        }
+      },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            profileImage: true,
+          },
         },
       },
-    },
-    orderBy: { totalXP: "desc" },
-    take: limit,
-  });
+      orderBy: { totalXP: "desc" },
+      take: limit,
+    });
+  } else {
+    // Get all user profiles if no sportType filter
+    topUsers = await prisma.userProfile.findMany({
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            profileImage: true,
+          },
+        },
+      },
+      orderBy: { totalXP: "desc" },
+      take: limit,
+    });
+  }
 
   return topUsers.map((user: any, index: number) => ({
     rank: index + 1,
