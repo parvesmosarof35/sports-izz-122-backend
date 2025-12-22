@@ -221,6 +221,7 @@ model Venue_booking {
   date              String
   day               String
   timeSlot          Json // { "from": "10:00 AM", "to": "12:00 PM" }
+  courtNumber        Int
   sportsType        String
   totalPrice        Float
   bookingStatus     BookingStatus @default(PENDING)
