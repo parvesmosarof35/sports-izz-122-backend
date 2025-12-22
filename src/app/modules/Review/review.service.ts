@@ -2,6 +2,7 @@ import { Review } from "@prisma/client";
 import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
+import { GamificationService } from "../Gamification/gamification.service";
 
 // create venue review
 const createVenueReview = async (
@@ -47,6 +48,32 @@ const createVenueReview = async (
       venueReviewCount: ratings.length,
     },
   });
+
+  // award XP for review with comprehensive gamification updates
+  try {
+    // First check if gamification is enabled
+    const settings = await GamificationService.getGamificationSettings();
+    if (!settings.isActive) {
+      console.log("Gamification is disabled - skipping XP award for review");
+      return review;
+    }
+
+    const gamificationResult = await GamificationService.awardXP(
+      userId,
+      "REVIEW" as any,
+      `Venue review: ${venueId} - Rating: ${rating}`
+    );
+
+    console.log("Review gamification award completed:", {
+      xpEarned: gamificationResult.xpEarned,
+      newLevel: gamificationResult.newLevel,
+      newBadges: gamificationResult.newBadges.length,
+      achievementUpdates: gamificationResult.achievementUpdates.length,
+    });
+  } catch (error) {
+    // Log error but don't fail review creation
+    console.error("Review gamification award failed:", error);
+  }
 
   return review;
 };

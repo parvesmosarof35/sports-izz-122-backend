@@ -11,7 +11,12 @@ import ApiError from "../../../errors/ApiErrors";
 
 // get user gamification profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
+  
+  if (!userId) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated or invalid user ID");
+  }
+  
   const result = await GamificationService.getUserProfile(userId);
 
   sendResponse(res, {
@@ -24,7 +29,7 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 
 // award XP to user
 const awardXP = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   
   if (!userId) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
@@ -62,7 +67,7 @@ const getLeaderboard = catchAsync(async (req: Request, res: Response) => {
 
 // redeem points
 const redeemPoints = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   const { pointsToRedeem, rewardType } = req.body;
   const result = await GamificationService.redeemPoints(
     userId,
@@ -80,7 +85,7 @@ const redeemPoints = catchAsync(async (req: Request, res: Response) => {
 
 // get user badges
 const getUserBadges = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   const result = await GamificationService.getUserBadges(userId);
 
   sendResponse(res, {
@@ -93,7 +98,7 @@ const getUserBadges = catchAsync(async (req: Request, res: Response) => {
 
 // get user achievements
 const getUserAchievements = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   const result = await GamificationService.getUserAchievements(userId);
 
   sendResponse(res, {
@@ -106,7 +111,7 @@ const getUserAchievements = catchAsync(async (req: Request, res: Response) => {
 
 // get user streaks
 const getUserStreaks = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   const result = await GamificationService.getUserStreaks(userId);
 
   sendResponse(res, {
@@ -119,7 +124,7 @@ const getUserStreaks = catchAsync(async (req: Request, res: Response) => {
 
 // get xp history
 const getXPHistory = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.userId;
+  const userId = req.user?.id;
   const paginationOptions = pick(req.query, paginationFields);
   const result = await GamificationService.getXPHistory(
     userId,

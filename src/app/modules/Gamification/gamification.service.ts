@@ -82,6 +82,10 @@ const awardXP = async (
 
 // get user gamification profile
 const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
   const profile = await prisma.userProfile.findUnique({
     where: { userId },
     include: {
@@ -98,6 +102,38 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
   if (!profile) {
     // Create profile if it doesn't exist
     return await createUserProfile(userId);
+  }
+
+  // Check for level up when getting profile
+  const levelUp = await checkLevelUp(userId, profile.currentXP);
+  if (levelUp) {
+    // Refresh profile after level up
+    const updatedProfile = await prisma.userProfile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
+    
+    if (updatedProfile) {
+      const badges = await getUserBadges(userId);
+      const achievements = await getUserAchievements(userId);
+      const streaks = await getUserStreaks(userId);
+
+      return {
+        ...updatedProfile,
+        badges,
+        achievements,
+        streaks,
+        user: updatedProfile.user,
+      };
+    }
   }
 
   const badges = await getUserBadges(userId);
@@ -126,23 +162,23 @@ const getLeaderboard = async (
       where: {
         venues: {
           some: {
-            sportsType: sportType
-          }
-        }
+            sportsType: sportType,
+          },
+        },
       },
       select: {
-        id: true
-      }
+        id: true,
+      },
     });
 
-    const userIds = usersWithSportType.map(user => user.id);
+    const userIds = usersWithSportType.map((user) => user.id);
 
     // Get user profiles for those users
     topUsers = await prisma.userProfile.findMany({
       where: {
         userId: {
-          in: userIds
-        }
+          in: userIds,
+        },
       },
       include: {
         user: {
@@ -223,7 +259,7 @@ const calculateStreakBonus = async (
 ): Promise<number> => {
   // Skip streak calculation for now - return 0
   return 0;
-  
+
   // TODO: Implement streak tracking later
   /*
   const streakType =
@@ -278,7 +314,41 @@ const updateUserProfile = async (
     },
   });
 
+  // Update streak days
+  await updateStreakDays(userId, action);
+
   return profile;
+};
+
+// update streak days
+const updateStreakDays = async (userId: string, action: GamificationAction) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const profile = await prisma.userProfile.findUnique({ where: { userId } });
+  if (!profile) return;
+
+  const lastActive = new Date(profile.lastActiveDate);
+  lastActive.setHours(0, 0, 0, 0);
+
+  const daysDiff = Math.floor(
+    (today.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (daysDiff === 1) {
+    // Consecutive day - increment streak
+    await prisma.userProfile.update({
+      where: { userId },
+      data: { streakDays: { increment: 1 } },
+    });
+  } else if (daysDiff > 1) {
+    // Streak broken - reset to 1
+    await prisma.userProfile.update({
+      where: { userId },
+      data: { streakDays: 1 },
+    });
+  }
+  // daysDiff === 0 means already active today, no change
 };
 
 // record xp history
@@ -304,14 +374,15 @@ const recordXPHistory = async (
 
 // check level up
 const checkLevelUp = async (userId: string, currentXP: number) => {
+  const profile = await prisma.userProfile.findUnique({ where: { userId } });
+  if (!profile) return null;
+
+  // Try to find level from Level table
   const currentLevel = await prisma.level.findFirst({
     where: { minXP: { lte: currentXP }, maxXP: { gte: currentXP } },
   });
 
-  const profile = await prisma.userProfile.findUnique({ where: { userId } });
-  if (!profile || !currentLevel) return null;
-
-  if (currentLevel.level > profile.currentLevel) {
+  if (currentLevel && currentLevel.level > profile.currentLevel) {
     await prisma.userProfile.update({
       where: { userId },
       data: {
@@ -325,6 +396,43 @@ const checkLevelUp = async (userId: string, currentXP: number) => {
       newLevel: currentLevel.level,
       title: currentLevel.title,
       rewards: currentLevel.benefits,
+    };
+  }
+
+  // Fallback: Calculate level based on XP if Level table is empty
+  const calculatedLevel = Math.floor(currentXP / 100) + 1; // 100 XP per level
+  const nextLevelXP = calculatedLevel * 100;
+
+  if (calculatedLevel > profile.currentLevel) {
+    const levelTitles = [
+      "Beginner",
+      "Novice",
+      "Apprentice",
+      "Journeyman",
+      "Expert",
+      "Master",
+      "Grandmaster",
+      "Legend",
+      "Mythic",
+      "Immortal",
+    ];
+
+    const levelTitle =
+      levelTitles[Math.min(calculatedLevel - 1, levelTitles.length - 1)];
+
+    await prisma.userProfile.update({
+      where: { userId },
+      data: {
+        currentLevel: calculatedLevel,
+        levelTitle,
+        nextLevelXP,
+      },
+    });
+
+    return {
+      newLevel: calculatedLevel,
+      title: levelTitle,
+      rewards: [`Level ${calculatedLevel} benefits`],
     };
   }
 
@@ -491,6 +599,10 @@ const updateAchievements = async (
 const createUserProfile = async (
   userId: string
 ): Promise<UserProfileResponse> => {
+  if (!userId) {
+    throw new Error("User ID is required to create profile");
+  }
+
   const profile = await prisma.userProfile.create({
     data: { userId },
     include: {
