@@ -13,6 +13,7 @@ export interface IVenueBooking {
     from: string;
     to: string;
   };
+  courtNumber: number;
   sportsType: string;
   totalPrice: number;
 }

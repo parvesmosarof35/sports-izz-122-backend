@@ -9,6 +9,7 @@ const createVenueBookingValidation = z.object({
       from: z.string().min(1, "Start time is required"),
       to: z.string().min(1, "End time is required"),
     }),
+    courtNumber: z.number().min(1, "Court number is required"),
     sportsType: z.string().min(1, "SportsType is required"),
     totalPrice: z.number().min(1, "Total price must be positive"),
     venueId: z.string().optional(),

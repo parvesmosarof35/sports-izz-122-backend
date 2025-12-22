@@ -42,6 +42,14 @@ const createVenueBooking = async (
     );
   }
 
+  // validate court number
+  if (!venue.courtNumbers.includes(payload.courtNumber)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Court number ${payload.courtNumber} is not available at this venue. Available courts: ${venue.courtNumbers.join(', ')}`
+    );
+  }
+
   // find vendor through vendorId
   //   const vendor = await prisma.user.findUnique({
   //     where: { id: venue?.vendorId! },
@@ -54,12 +62,13 @@ const createVenueBooking = async (
   //     );
   //   }
 
-  // check if the time slot is available for the given date and day
+  // check if the time slot is available for the given date, day, and court number
   const existingBooking = await prisma.venue_booking.findFirst({
     where: {
       venueId,
       date: payload.date,
       day: payload.day,
+      courtNumber: payload.courtNumber,
       bookingStatus: {
         equals: BookingStatus.CONFIRMED,
       },
@@ -72,7 +81,7 @@ const createVenueBooking = async (
   if (existingBooking) {
     throw new ApiError(
       httpStatus.CONFLICT,
-      "This time slot is already booked!"
+      `Court number ${payload.courtNumber} is already booked for this time slot!`
     );
   }
 
@@ -85,6 +94,7 @@ const createVenueBooking = async (
       date: payload.date,
       day: payload.day,
       timeSlot: payload.timeSlot,
+      courtNumber: payload.courtNumber,
       sportsType: payload.sportsType,
       totalPrice: payload.totalPrice,
       checkoutSessionId: payload.checkoutSessionId,
