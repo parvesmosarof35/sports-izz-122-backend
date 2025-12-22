@@ -37,7 +37,7 @@ router.patch(
   auth(UserRole.VENDOR),
   uploadFile.venueImage,
   parseBodyData,
-  validateRequest(VenueValidation.updateVenueValidation),
+  // validateRequest(VenueValidation.updateVenueValidation),
   VenueController.updateVenue
 );
 

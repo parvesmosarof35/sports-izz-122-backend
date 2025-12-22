@@ -50,10 +50,10 @@ const updateVenueValidation = z.object({
     venueName: z.string().min(1, "Venue name is required").optional(),
     sportsType: z.string().optional(),
     pricePerHour: z
-      .number()
-      .positive("Price per hour must be positive")
+      .string()
+      // .positive("Price per hour must be positive")
       .optional(),
-    capacity: z.number().positive("Capacity must be positive").optional(),
+    capacity: z.string().optional(),
     location: z.string().min(1, "Location is required").optional(),
     description: z.string().min(1, "Description is required").optional(),
     venueStatus: z.boolean().optional(),

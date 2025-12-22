@@ -364,12 +364,32 @@ const updateVenue = async (
   }
 
   // process courtNumbers if provided
+  // const processedPayload = {
+  //   ...payload,
+  //   courtNumbers: payload.courtNumbers
+  //     ? Array.isArray(payload.courtNumbers)
+  //       ? payload.courtNumbers
+  //       : Array.from({ length: payload.courtNumbers }, (_, i) => i + 1)
+  //     : undefined,
+  // };
+  // process courtNumbers if provided
   const processedPayload = {
     ...payload,
     courtNumbers: payload.courtNumbers
       ? Array.isArray(payload.courtNumbers)
         ? payload.courtNumbers
-        : Array.from({ length: payload.courtNumbers }, (_, i) => i + 1)
+        : Array.from(
+            { length: parseInt(String(payload.courtNumbers)) },
+            (_, i) => i + 1
+          )
+      : undefined,
+    // Parse string values to proper types
+    pricePerHour: payload.pricePerHour
+      ? parseFloat(String(payload.pricePerHour))
+      : undefined,
+    capacity: payload.capacity ? parseInt(String(payload.capacity)) : undefined,
+    venueStatus: payload.venueStatus
+      ? String(payload.venueStatus) === "true"
       : undefined,
   };
 
