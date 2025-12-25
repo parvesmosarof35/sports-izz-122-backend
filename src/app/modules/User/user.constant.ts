@@ -5,8 +5,10 @@ export const filterField: string[] = [
   "contactNumber",
   "country",
   "status",
+  "role",
   "timeRange",
 ];
+
 export const searchableFields: string[] = [
   "fullName",
   "email",

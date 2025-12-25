@@ -167,22 +167,39 @@ const getAllUsers = async (
 ): Promise<IGenericResponse<SafeUser[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  const { searchTerm, timeRange, ...filterData } = params;
+  const { searchTerm, timeRange, role, status, ...filterData } = params;
 
   const filters: Prisma.UserWhereInput[] = [];
 
   // Filter for active users and role USER only
   filters.push({
-    role: UserRole.USER,
-    status: UserStatus.ACTIVE,
+    role: {
+      in: [UserRole.USER, UserRole.VENDOR],
+    },
   });
 
+  if (role) {
+    filters.push({
+      role: role as UserRole,
+      status: status ? (status as UserStatus) : UserStatus.ACTIVE,
+    });
+  }
+
+  if (!role && status === UserStatus.INACTIVE) {
+    filters.push({
+      status: UserStatus.INACTIVE,
+      role: {
+        in: [UserRole.USER, UserRole.VENDOR],
+      },
+    });
+  }
+
   // text search
-  if (params?.searchTerm) {
+  if (searchTerm) {
     filters.push({
       OR: searchableFields.map((field) => ({
         [field]: {
-          contains: params.searchTerm,
+          contains: searchTerm,
           mode: "insensitive",
         },
       })),
@@ -210,7 +227,8 @@ const getAllUsers = async (
     }
   }
 
-  const where: Prisma.UserWhereInput = { AND: filters };
+  const where: Prisma.UserWhereInput =
+    filters.length > 0 ? { AND: filters } : {};
 
   const result = await prisma.user.findMany({
     where,
