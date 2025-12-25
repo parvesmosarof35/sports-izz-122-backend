@@ -121,535 +121,535 @@ const getOverview = async (params: IFilterRequest) => {
   };
 };
 
-// property owner total earnings hotel
-const getPartnerTotalEarningsHotel = async (
-  partnerId: string,
-  timeRange?: string
-) => {
-  // find partner
-  const partner = await prisma.user.findUnique({
-    where: {
-      id: partnerId,
-    },
-  });
-  if (!partner) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Partner not found");
-  }
+// // property owner total earnings hotel
+// const getPartnerTotalEarningsHotel = async (
+//   partnerId: string,
+//   timeRange?: string
+// ) => {
+//   // find partner
+//   const partner = await prisma.user.findUnique({
+//     where: {
+//       id: partnerId,
+//     },
+//   });
+//   if (!partner) {
+//     throw new ApiError(httpStatus.NOT_FOUND, "Partner not found");
+//   }
 
-  // date range filter
-  const dateRange = getDateRange(timeRange);
+//   // date range filter
+//   const dateRange = getDateRange(timeRange);
 
-  // total earnings
-  const earnings = await prisma.payment.aggregate({
-    where: {
-      partnerId: partnerId,
-      status: PaymentStatus.PAID,
-      serviceType: "HOTEL",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    _sum: {
-      amount: true,
-    },
-    _count: {
-      id: true,
-    },
-  });
+//   // total earnings
+//   const earnings = await prisma.payment.aggregate({
+//     where: {
+//       partnerId: partnerId,
+//       status: PaymentStatus.PAID,
+//       serviceType: "HOTEL",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     _sum: {
+//       amount: true,
+//     },
+//     _count: {
+//       id: true,
+//     },
+//   });
 
-  // total bookings
-  const totalBookings = await prisma.hotel_Booking.count({
-    where: {
-      partnerId: partnerId,
-      bookingStatus: BookingStatus.CONFIRMED,
-      ...(dateRange && { createdAt: dateRange }),
-    },
-  });
+//   // total bookings
+//   const totalBookings = await prisma.hotel_Booking.count({
+//     where: {
+//       partnerId: partnerId,
+//       bookingStatus: BookingStatus.CONFIRMED,
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//   });
 
-  // earnings trend - monthly data
-  const monthlyPayments = await prisma.payment.findMany({
-    where: {
-      partnerId,
-      status: PaymentStatus.PAID,
-      serviceType: "HOTEL",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    select: {
-      amount: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+//   // earnings trend - monthly data
+//   const monthlyPayments = await prisma.payment.findMany({
+//     where: {
+//       partnerId,
+//       status: PaymentStatus.PAID,
+//       serviceType: "HOTEL",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     select: {
+//       amount: true,
+//       createdAt: true,
+//     },
+//     orderBy: {
+//       createdAt: "asc",
+//     },
+//   });
 
-  // bookings trend - monthly data
-  const monthlyBookings = await prisma.hotel_Booking.findMany({
-    where: {
-      partnerId,
-      bookingStatus: BookingStatus.CONFIRMED,
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    select: {
-      createdAt: true,
-      totalPrice: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+//   // bookings trend - monthly data
+//   const monthlyBookings = await prisma.hotel_Booking.findMany({
+//     where: {
+//       partnerId,
+//       bookingStatus: BookingStatus.CONFIRMED,
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     select: {
+//       createdAt: true,
+//       totalPrice: true,
+//     },
+//     orderBy: {
+//       createdAt: "asc",
+//     },
+//   });
 
-  // group earnings by month
-  const earningsByMonth = monthlyPayments.reduce((acc: any, payment) => {
-    const monthKey = payment.createdAt.toISOString().slice(0, 7); // YYYY-MM
-    if (!acc[monthKey]) {
-      acc[monthKey] = { month: monthKey, earnings: 0, count: 0 };
-    }
-    acc[monthKey].earnings += payment.amount;
-    acc[monthKey].count += 1;
-    return acc;
-  }, {});
+//   // group earnings by month
+//   const earningsByMonth = monthlyPayments.reduce((acc: any, payment) => {
+//     const monthKey = payment.createdAt.toISOString().slice(0, 7); // YYYY-MM
+//     if (!acc[monthKey]) {
+//       acc[monthKey] = { month: monthKey, earnings: 0, count: 0 };
+//     }
+//     acc[monthKey].earnings += payment.amount;
+//     acc[monthKey].count += 1;
+//     return acc;
+//   }, {});
 
-  // group bookings by month
-  const bookingsByMonth = monthlyBookings.reduce((acc: any, booking) => {
-    const monthKey = booking.createdAt.toISOString().slice(0, 7); // YYYY-MM
-    if (!acc[monthKey]) {
-      acc[monthKey] = { month: monthKey, bookings: 0, revenue: 0 };
-    }
-    acc[monthKey].bookings += 1;
-    acc[monthKey].revenue += booking.totalPrice;
-    return acc;
-  }, {});
+//   // group bookings by month
+//   const bookingsByMonth = monthlyBookings.reduce((acc: any, booking) => {
+//     const monthKey = booking.createdAt.toISOString().slice(0, 7); // YYYY-MM
+//     if (!acc[monthKey]) {
+//       acc[monthKey] = { month: monthKey, bookings: 0, revenue: 0 };
+//     }
+//     acc[monthKey].bookings += 1;
+//     acc[monthKey].revenue += booking.totalPrice;
+//     return acc;
+//   }, {});
 
-  // get current year
-  const currentYear = new Date().getFullYear();
+//   // get current year
+//   const currentYear = new Date().getFullYear();
 
-  // create proper month mapping
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+//   // create proper month mapping
+//   const monthNames = [
+//     "January",
+//     "February",
+//     "March",
+//     "April",
+//     "May",
+//     "June",
+//     "July",
+//     "August",
+//     "September",
+//     "October",
+//     "November",
+//     "December",
+//   ];
 
-  // generate all months from January to December for current year
-  const allMonths = [];
-  for (let i = 0; i < 12; i++) {
-    const monthKey = `${currentYear}-${String(i + 1).padStart(2, "0")}`; // YYYY-MM format
-    const monthName = monthNames[i];
+//   // generate all months from January to December for current year
+//   const allMonths = [];
+//   for (let i = 0; i < 12; i++) {
+//     const monthKey = `${currentYear}-${String(i + 1).padStart(2, "0")}`; // YYYY-MM format
+//     const monthName = monthNames[i];
 
-    allMonths.push({
-      month: monthKey,
-      monthName: monthName,
-      earnings: earningsByMonth[monthKey]?.earnings || 0,
-      count: earningsByMonth[monthKey]?.count || 0,
-      bookings: bookingsByMonth[monthKey]?.bookings || 0,
-      revenue: bookingsByMonth[monthKey]?.revenue || 0,
-    });
-  }
+//     allMonths.push({
+//       month: monthKey,
+//       monthName: monthName,
+//       earnings: earningsByMonth[monthKey]?.earnings || 0,
+//       count: earningsByMonth[monthKey]?.count || 0,
+//       bookings: bookingsByMonth[monthKey]?.bookings || 0,
+//       revenue: bookingsByMonth[monthKey]?.revenue || 0,
+//     });
+//   }
 
-  // check if we have data for previous December and add it if needed
-  const prevDecemberKey = `${currentYear - 1}-12`;
+//   // check if we have data for previous December and add it if needed
+//   const prevDecemberKey = `${currentYear - 1}-12`;
 
-  if (earningsByMonth[prevDecemberKey] || bookingsByMonth[prevDecemberKey]) {
-    // replace December (index 11) with previous December data
-    allMonths[11] = {
-      month: prevDecemberKey,
-      monthName: "December",
-      earnings: earningsByMonth[prevDecemberKey]?.earnings || 0,
-      count: earningsByMonth[prevDecemberKey]?.count || 0,
-      bookings: bookingsByMonth[prevDecemberKey]?.bookings || 0,
-      revenue: bookingsByMonth[prevDecemberKey]?.revenue || 0,
-    };
-  }
+//   if (earningsByMonth[prevDecemberKey] || bookingsByMonth[prevDecemberKey]) {
+//     // replace December (index 11) with previous December data
+//     allMonths[11] = {
+//       month: prevDecemberKey,
+//       monthName: "December",
+//       earnings: earningsByMonth[prevDecemberKey]?.earnings || 0,
+//       count: earningsByMonth[prevDecemberKey]?.count || 0,
+//       bookings: bookingsByMonth[prevDecemberKey]?.bookings || 0,
+//       revenue: bookingsByMonth[prevDecemberKey]?.revenue || 0,
+//     };
+//   }
 
-  // separate earnings and bookings trends
-  const earningsTrend = allMonths.map(
-    ({ month, monthName, earnings, count }) => ({
-      month,
-      monthName,
-      earnings,
-      count,
-    })
-  );
+//   // separate earnings and bookings trends
+//   const earningsTrend = allMonths.map(
+//     ({ month, monthName, earnings, count }) => ({
+//       month,
+//       monthName,
+//       earnings,
+//       count,
+//     })
+//   );
 
-  const bookingsTrend = allMonths.map(
-    ({ month, monthName, bookings, revenue }) => ({
-      month,
-      monthName,
-      bookings,
-      revenue,
-    })
-  );
+//   const bookingsTrend = allMonths.map(
+//     ({ month, monthName, bookings, revenue }) => ({
+//       month,
+//       monthName,
+//       bookings,
+//       revenue,
+//     })
+//   );
 
-  return {
-    totalEarnings: earnings._sum.amount || 0,
-    // totalPayments: earnings._count.id || 0,
-    totalBookings,
-    earningsTrend,
-    bookingsTrend,
-    timeRange: timeRange || "ALL_TIME",
-  };
-};
+//   return {
+//     totalEarnings: earnings._sum.amount || 0,
+//     // totalPayments: earnings._count.id || 0,
+//     totalBookings,
+//     earningsTrend,
+//     bookingsTrend,
+//     timeRange: timeRange || "ALL_TIME",
+//   };
+// };
 
-// service provider total earnings service
-const getServiceProviderTotalEarningsService = async (
-  providerId: string,
-  timeRange?: string
-) => {
-  // find partner
-  const partner = await prisma.user.findUnique({
-    where: {
-      id: providerId,
-    },
-  });
-  if (!partner) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Partner not found");
-  }
+// // service provider total earnings service
+// const getServiceProviderTotalEarningsService = async (
+//   providerId: string,
+//   timeRange?: string
+// ) => {
+//   // find partner
+//   const partner = await prisma.user.findUnique({
+//     where: {
+//       id: providerId,
+//     },
+//   });
+//   if (!partner) {
+//     throw new ApiError(httpStatus.NOT_FOUND, "Partner not found");
+//   }
 
-  // date range filter
-  const dateRange = getDateRange(timeRange);
+//   // date range filter
+//   const dateRange = getDateRange(timeRange);
 
-  // total earnings
-  const earnings = await prisma.payment.aggregate({
-    where: {
-      vendorId,
-      status: PaymentStatus.PAID,
-      serviceType: "SERVICE",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    _sum: {
-      amount: true,
-    },
-    _count: {
-      id: true,
-    },
-  });
+//   // total earnings
+//   const earnings = await prisma.payment.aggregate({
+//     where: {
+//       vendorId,
+//       status: PaymentStatus.PAID,
+//       serviceType: "SERVICE",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     _sum: {
+//       amount: true,
+//     },
+//     _count: {
+//       id: true,
+//     },
+//   });
 
 
-  // total bookings
-  const totalBookings = await prisma.venue_booking.count({
-    where: {
-      vendorId: providerId,
-      bookingStatus: BookingStatus.CONFIRMED,
-      ...(dateRange && { createdAt: dateRange }),
-    },
-  });
+//   // total bookings
+//   const totalBookings = await prisma.venue_booking.count({
+//     where: {
+//       vendorId: providerId,
+//       bookingStatus: BookingStatus.CONFIRMED,
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//   });
 
-  // earnings trend - monthly data
-  const monthlyPayments = await prisma.payment.findMany({
-    where: {
-      vendorId,
-      status: PaymentStatus.PAID,
-      serviceType: "SERVICE",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    select: {
-      amount: true,
-      createdAt: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+//   // earnings trend - monthly data
+//   const monthlyPayments = await prisma.payment.findMany({
+//     where: {
+//       vendorId,
+//       status: PaymentStatus.PAID,
+//       serviceType: "SERVICE",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     select: {
+//       amount: true,
+//       createdAt: true,
+//     },
+//     orderBy: {
+//       createdAt: "asc",
+//     },
+//   });
 
-  // bookings trend - monthly data
-  const monthlyBookings = await prisma.venue_booking.findMany({
-    where: {
-      providerId,
-      bookingStatus: BookingStatus.CONFIRMED,
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    select: {
-      createdAt: true,
-      totalPrice: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+//   // bookings trend - monthly data
+//   const monthlyBookings = await prisma.venue_booking.findMany({
+//     where: {
+//       providerId,
+//       bookingStatus: BookingStatus.CONFIRMED,
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     select: {
+//       createdAt: true,
+//       totalPrice: true,
+//     },
+//     orderBy: {
+//       createdAt: "asc",
+//     },
+//   });
 
-  // group earnings by month
-  const earningsByMonth = monthlyPayments.reduce((acc: any, payment) => {
-    const monthKey = payment.createdAt.toISOString().slice(0, 7); // YYYY-MM
-    if (!acc[monthKey]) {
-      acc[monthKey] = { month: monthKey, earnings: 0, count: 0 };
-    }
-    acc[monthKey].earnings += payment.amount;
-    acc[monthKey].count += 1;
-    return acc;
-  }, {});
+//   // group earnings by month
+//   const earningsByMonth = monthlyPayments.reduce((acc: any, payment) => {
+//     const monthKey = payment.createdAt.toISOString().slice(0, 7); // YYYY-MM
+//     if (!acc[monthKey]) {
+//       acc[monthKey] = { month: monthKey, earnings: 0, count: 0 };
+//     }
+//     acc[monthKey].earnings += payment.amount;
+//     acc[monthKey].count += 1;
+//     return acc;
+//   }, {});
 
-  // group bookings by month
-  const bookingsByMonth = monthlyBookings.reduce((acc: any, booking) => {
-    const monthKey = booking.createdAt.toISOString().slice(0, 7); // YYYY-MM
-    if (!acc[monthKey]) {
-      acc[monthKey] = { month: monthKey, bookings: 0, revenue: 0 };
-    }
-    acc[monthKey].bookings += 1;
-    acc[monthKey].revenue += booking.totalPrice;
-    return acc;
-  }, {});
+//   // group bookings by month
+//   const bookingsByMonth = monthlyBookings.reduce((acc: any, booking) => {
+//     const monthKey = booking.createdAt.toISOString().slice(0, 7); // YYYY-MM
+//     if (!acc[monthKey]) {
+//       acc[monthKey] = { month: monthKey, bookings: 0, revenue: 0 };
+//     }
+//     acc[monthKey].bookings += 1;
+//     acc[monthKey].revenue += booking.totalPrice;
+//     return acc;
+//   }, {});
 
-  // get current year
-  const currentYear = new Date().getFullYear();
+//   // get current year
+//   const currentYear = new Date().getFullYear();
 
-  // create proper month mapping
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+//   // create proper month mapping
+//   const monthNames = [
+//     "January",
+//     "February",
+//     "March",
+//     "April",
+//     "May",
+//     "June",
+//     "July",
+//     "August",
+//     "September",
+//     "October",
+//     "November",
+//     "December",
+//   ];
 
-  // generate all months from January to December for current year
-  const allMonths = [];
-  for (let i = 0; i < 12; i++) {
-    const monthKey = `${currentYear}-${String(i + 1).padStart(2, "0")}`; // YYYY-MM format
-    const monthName = monthNames[i];
+//   // generate all months from January to December for current year
+//   const allMonths = [];
+//   for (let i = 0; i < 12; i++) {
+//     const monthKey = `${currentYear}-${String(i + 1).padStart(2, "0")}`; // YYYY-MM format
+//     const monthName = monthNames[i];
 
-    allMonths.push({
-      month: monthKey,
-      monthName: monthName,
-      earnings: earningsByMonth[monthKey]?.earnings || 0,
-      count: earningsByMonth[monthKey]?.count || 0,
-      bookings: bookingsByMonth[monthKey]?.bookings || 0,
-      revenue: bookingsByMonth[monthKey]?.revenue || 0,
-    });
-  }
+//     allMonths.push({
+//       month: monthKey,
+//       monthName: monthName,
+//       earnings: earningsByMonth[monthKey]?.earnings || 0,
+//       count: earningsByMonth[monthKey]?.count || 0,
+//       bookings: bookingsByMonth[monthKey]?.bookings || 0,
+//       revenue: bookingsByMonth[monthKey]?.revenue || 0,
+//     });
+//   }
 
-  // check if we have data for previous December and add it if needed
-  const prevDecemberKey = `${currentYear - 1}-12`;
+//   // check if we have data for previous December and add it if needed
+//   const prevDecemberKey = `${currentYear - 1}-12`;
 
-  if (earningsByMonth[prevDecemberKey] || bookingsByMonth[prevDecemberKey]) {
-    // replace December (index 11) with previous December data
-    allMonths[11] = {
-      month: prevDecemberKey,
-      monthName: "December",
-      earnings: earningsByMonth[prevDecemberKey]?.earnings || 0,
-      count: earningsByMonth[prevDecemberKey]?.count || 0,
-      bookings: bookingsByMonth[prevDecemberKey]?.bookings || 0,
-      revenue: bookingsByMonth[prevDecemberKey]?.revenue || 0,
-    };
-  }
+//   if (earningsByMonth[prevDecemberKey] || bookingsByMonth[prevDecemberKey]) {
+//     // replace December (index 11) with previous December data
+//     allMonths[11] = {
+//       month: prevDecemberKey,
+//       monthName: "December",
+//       earnings: earningsByMonth[prevDecemberKey]?.earnings || 0,
+//       count: earningsByMonth[prevDecemberKey]?.count || 0,
+//       bookings: bookingsByMonth[prevDecemberKey]?.bookings || 0,
+//       revenue: bookingsByMonth[prevDecemberKey]?.revenue || 0,
+//     };
+//   }
 
-  // separate earnings and bookings trends
-  const earningsTrend = allMonths.map(
-    ({ month, monthName, earnings, count }) => ({
-      month,
-      monthName,
-      earnings,
-      count,
-    })
-  );
+//   // separate earnings and bookings trends
+//   const earningsTrend = allMonths.map(
+//     ({ month, monthName, earnings, count }) => ({
+//       month,
+//       monthName,
+//       earnings,
+//       count,
+//     })
+//   );
 
-  const bookingsTrend = allMonths.map(
-    ({ month, monthName, bookings, revenue }) => ({
-      month,
-      monthName,
-      bookings,
-      revenue,
-    })
-  );
+//   const bookingsTrend = allMonths.map(
+//     ({ month, monthName, bookings, revenue }) => ({
+//       month,
+//       monthName,
+//       bookings,
+//       revenue,
+//     })
+//   );
 
-  return {
-    totalEarnings: earnings._sum.amount || 0,
-    // totalPayments: earnings._count.id || 0,
-    totalBookings,
-    earningsTrend,
-    bookingsTrend,
-    timeRange: timeRange || "ALL_TIME",
-  };
-};
+//   return {
+//     totalEarnings: earnings._sum.amount || 0,
+//     // totalPayments: earnings._count.id || 0,
+//     totalBookings,
+//     earningsTrend,
+//     bookingsTrend,
+//     timeRange: timeRange || "ALL_TIME",
+//   };
+// };
 
-// admin earns
-const getAdminTotalEarnings = async (timeRange?: string) => {
-  const dateRange = getDateRange(timeRange);
+// // admin earns
+// const getAdminTotalEarnings = async (timeRange?: string) => {
+//   const dateRange = getDateRange(timeRange);
 
-  // all payments with date filtering
-  const payments = await prisma.payment.findMany({
-    where: {
-      status: {
-        in: [PaymentStatus.PAID, PaymentStatus.SUCCESS],
-      },
-      ...(dateRange && { createdAt: dateRange }),
-    },
-    select: {
-      amount: true,
-      createdAt: true,
-      status: true,
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
-  });
+//   // all payments with date filtering
+//   const payments = await prisma.payment.findMany({
+//     where: {
+//       status: {
+//         in: [PaymentStatus.PAID, PaymentStatus.SUCCESS],
+//       },
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//     select: {
+//       amount: true,
+//       createdAt: true,
+//       status: true,
+//     },
+//     orderBy: {
+//       createdAt: "asc",
+//     },
+//   });
 
-  // all hotel bookings bookingStatus COMPLETED with date filtering
-  const hotelBookings = await prisma.hotel_Booking.count({
-    where: {
-      bookingStatus: "COMPLETED",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-  });
+//   // all hotel bookings bookingStatus COMPLETED with date filtering
+//   const hotelBookings = await prisma.hotel_Booking.count({
+//     where: {
+//       bookingStatus: "COMPLETED",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//   });
 
-  // all service bookings bookingStatus COMPLETED with date filtering
-  const serviceBookings = await prisma.service_booking.count({
-    where: {
-      bookingStatus: "COMPLETED",
-      ...(dateRange && { createdAt: dateRange }),
-    },
-  });
+//   // all service bookings bookingStatus COMPLETED with date filtering
+//   const serviceBookings = await prisma.service_booking.count({
+//     where: {
+//       bookingStatus: "COMPLETED",
+//       ...(dateRange && { createdAt: dateRange }),
+//     },
+//   });
 
-  // total COMPLETED bookings
-  const totalBookings = hotelBookings + serviceBookings;
+//   // total COMPLETED bookings
+//   const totalBookings = hotelBookings + serviceBookings;
 
-  // average per booking amount from PAID payments only
-  const paidPayments = payments.filter(
-    (payment) => payment.status === PaymentStatus.PAID
-  );
-  const averageEarnings =
-    totalBookings > 0 && paidPayments.length > 0
-      ? paidPayments.reduce((sum, payment) => sum + payment.amount, 0) /
-        paidPayments.length
-      : 0;
+//   // average per booking amount from PAID payments only
+//   const paidPayments = payments.filter(
+//     (payment) => payment.status === PaymentStatus.PAID
+//   );
+//   const averageEarnings =
+//     totalBookings > 0 && paidPayments.length > 0
+//       ? paidPayments.reduce((sum, payment) => sum + payment.amount, 0) /
+//         paidPayments.length
+//       : 0;
 
-  // get all hotel bookings
-  const allHotelBookings = await prisma.hotel_Booking.findMany({
-    where: {
-      bookingStatus: {
-        in: [
-          BookingStatus.CONFIRMED,
-          BookingStatus.CANCELLED,
-          BookingStatus.COMPLETED,
-        ],
-      },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-        },
-      },
-    },
-  });
-  // get all service bookings
-  const allServiceBookings = await prisma.service_booking.findMany({
-    where: {
-      bookingStatus: {
-        in: [
-          BookingStatus.CONFIRMED,
-          BookingStatus.CANCELLED,
-          BookingStatus.COMPLETED,
-        ],
-      },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-        },
-      },
-    },
-  });
+//   // get all hotel bookings
+//   const allHotelBookings = await prisma.hotel_Booking.findMany({
+//     where: {
+//       bookingStatus: {
+//         in: [
+//           BookingStatus.CONFIRMED,
+//           BookingStatus.CANCELLED,
+//           BookingStatus.COMPLETED,
+//         ],
+//       },
+//     },
+//     include: {
+//       user: {
+//         select: {
+//           id: true,
+//           fullName: true,
+//           email: true,
+//         },
+//       },
+//     },
+//   });
+//   // get all service bookings
+//   const allServiceBookings = await prisma.service_booking.findMany({
+//     where: {
+//       bookingStatus: {
+//         in: [
+//           BookingStatus.CONFIRMED,
+//           BookingStatus.CANCELLED,
+//           BookingStatus.COMPLETED,
+//         ],
+//       },
+//     },
+//     include: {
+//       user: {
+//         select: {
+//           id: true,
+//           fullName: true,
+//           email: true,
+//         },
+//       },
+//     },
+//   });
 
-  // combine all bookings
-  const recentBookings = [
-    ...allHotelBookings.map((booking) => ({
-      ...booking,
-      type: "HOTEL",
-    })),
-    ...allServiceBookings.map((booking) => ({
-      ...booking,
-      type: "SERVICE",
-    })),
-  ].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
+//   // combine all bookings
+//   const recentBookings = [
+//     ...allHotelBookings.map((booking) => ({
+//       ...booking,
+//       type: "HOTEL",
+//     })),
+//     ...allServiceBookings.map((booking) => ({
+//       ...booking,
+//       type: "SERVICE",
+//     })),
+//   ].sort(
+//     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+//   );
 
-  // group by month
-  const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+//   // group by month
+//   const monthNames = [
+//     "January",
+//     "February",
+//     "March",
+//     "April",
+//     "May",
+//     "June",
+//     "July",
+//     "August",
+//     "September",
+//     "October",
+//     "November",
+//     "December",
+//   ];
 
-  const currentYear = new Date().getFullYear();
+//   const currentYear = new Date().getFullYear();
 
-  // all months with zero
-  const monthlyEarnings = monthNames.map((month, index) => {
-    const monthKey = `${currentYear}-${String(index + 1).padStart(2, "0")}`;
+//   // all months with zero
+//   const monthlyEarnings = monthNames.map((month, index) => {
+//     const monthKey = `${currentYear}-${String(index + 1).padStart(2, "0")}`;
 
-    const monthPayments = payments.filter((payment) => {
-      const paymentDate = new Date(payment.createdAt);
-      return (
-        paymentDate.getMonth() === index &&
-        paymentDate.getFullYear() === currentYear
-      );
-    });
+//     const monthPayments = payments.filter((payment) => {
+//       const paymentDate = new Date(payment.createdAt);
+//       return (
+//         paymentDate.getMonth() === index &&
+//         paymentDate.getFullYear() === currentYear
+//       );
+//     });
 
-    const totalEarnings = monthPayments.reduce(
-      (sum, payment) => sum + payment.amount,
-      0
-    );
+//     const totalEarnings = monthPayments.reduce(
+//       (sum, payment) => sum + payment.amount,
+//       0
+//     );
 
-    return {
-      month,
-      monthKey,
-      earnings: totalEarnings,
-      count: monthPayments.length,
-    };
-  });
+//     return {
+//       month,
+//       monthKey,
+//       earnings: totalEarnings,
+//       count: monthPayments.length,
+//     };
+//   });
 
-  // calculate total earnings
-  const totalEarnings = payments.reduce(
-    (sum, payment) => sum + payment.amount,
-    0
-  );
+//   // calculate total earnings
+//   const totalEarnings = payments.reduce(
+//     (sum, payment) => sum + payment.amount,
+//     0
+//   );
 
-  return {
-    totalEarnings,
-    totalBookings,
-    averageEarnings,
-    monthlyEarnings,
-    recentBookings,
-    timeRange: timeRange || "ALL_TIME",
-  };
-};
+//   return {
+//     totalEarnings,
+//     totalBookings,
+//     averageEarnings,
+//     monthlyEarnings,
+//     recentBookings,
+//     timeRange: timeRange || "ALL_TIME",
+//   };
+// };
 
 export const StatisticsService = {
   getOverview,
 
-  // sales
-  getPartnerTotalEarningsHotel,
-  getServiceProviderTotalEarningsService,
+  // // sales
+  // getPartnerTotalEarningsHotel,
+  // getServiceProviderTotalEarningsService,
 
-  // admin earns
-  getAdminTotalEarnings,
+  // // admin earns
+  // getAdminTotalEarnings,
 };

@@ -12,25 +12,25 @@ router.get(
   StatisticsController.getOverview
 );
 
-// partner total earings hotel
-router.get(
-  "/earnings-hotel",
-  auth(UserRole.VENDOR),
-  StatisticsController.getPartnerTotalEarningsHotel
-);
+// // partner total earings hotel
+// router.get(
+//   "/earnings-hotel",
+//   auth(UserRole.VENDOR),
+//   StatisticsController.getPartnerTotalEarningsHotel
+// );
 
-// service provider total earnings service
-router.get(
-  "/earnings-service",
-  auth(UserRole.VENDOR),
-  StatisticsController.getServiceProviderTotalEarningsService
-);
+// // service provider total earnings service
+// router.get(
+//   "/earnings-service",
+//   auth(UserRole.VENDOR),
+//   StatisticsController.getServiceProviderTotalEarningsService
+// );
 
-// admin total earnings
-router.get(
-  "/admin-earnings",
-  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  StatisticsController.getAdminTotalEarnings
-);
+// // admin total earnings
+// router.get(
+//   "/admin-earnings",
+//   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+//   StatisticsController.getAdminTotalEarnings
+// );
 
 export const statisticsRoutes = router;

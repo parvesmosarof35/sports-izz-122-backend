@@ -20,63 +20,63 @@ const getOverview = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// property owner total earings hotel
-const getPartnerTotalEarningsHotel = catchAsync(
-  async (req: Request, res: Response) => {
-    const partnerId = req.user?.id;
-    const { timeRange } = req.query;
+// // property owner total earings hotel
+// const getPartnerTotalEarningsHotel = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const partnerId = req.user?.id;
+//     const { timeRange } = req.query;
 
-    const result = await StatisticsService.getPartnerTotalEarningsHotel(
-      partnerId,
-      timeRange as string
-    );
+//     const result = await StatisticsService.getPartnerTotalEarningsHotel(
+//       partnerId,
+//       timeRange as string
+//     );
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Property owner earnings fetched successfully",
-      data: result,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: "Property owner earnings fetched successfully",
+//       data: result,
+//     });
+//   }
+// );
 
-// service provider total earnings service
-const getServiceProviderTotalEarningsService = catchAsync(
-  async (req: Request, res: Response) => {
-    const providerId = req.user?.id;
-    const { timeRange } = req.query;
+// // service provider total earnings service
+// const getServiceProviderTotalEarningsService = catchAsync(
+//   async (req: Request, res: Response) => {
+//     const providerId = req.user?.id;
+//     const { timeRange } = req.query;
 
-    const result =
-      await StatisticsService.getServiceProviderTotalEarningsService(
-        providerId,
-        timeRange as string
-      );
+//     const result =
+//       await StatisticsService.getServiceProviderTotalEarningsService(
+//         providerId,
+//         timeRange as string
+//       );
 
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Property owner earnings fetched successfully",
-      data: result,
-    });
-  }
-);
+//     sendResponse(res, {
+//       statusCode: httpStatus.OK,
+//       success: true,
+//       message: "Property owner earnings fetched successfully",
+//       data: result,
+//     });
+//   }
+// );
 
-// admin total earnings
-const getAdminTotalEarnings = catchAsync(async (req: Request, res: Response) => {
-  const { timeRange } = req.query;
-  const result = await StatisticsService.getAdminTotalEarnings(timeRange as string);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: "Admin earnings fetched successfully",
-    data: result,
-  });
-});
+// // admin total earnings
+// const getAdminTotalEarnings = catchAsync(async (req: Request, res: Response) => {
+//   const { timeRange } = req.query;
+//   const result = await StatisticsService.getAdminTotalEarnings(timeRange as string);
+//   sendResponse(res, {
+//     statusCode: httpStatus.OK,
+//     success: true,
+//     message: "Admin earnings fetched successfully",
+//     data: result,
+//   });
+// });
 
 export const StatisticsController = {
   getOverview,
   // sales
-  getPartnerTotalEarningsHotel,
-  getServiceProviderTotalEarningsService,
-  getAdminTotalEarnings,
+  // getPartnerTotalEarningsHotel,
+  // getServiceProviderTotalEarningsService,
+  // getAdminTotalEarnings,
 };
