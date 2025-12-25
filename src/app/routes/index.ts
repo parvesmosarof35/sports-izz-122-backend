@@ -20,6 +20,7 @@ import { sportsTypeRoute } from "../modules/SportsType/sportsType.route";
 import { venueBookingRoutes } from "../modules/Venue_Booking/venueBooking.route";
 import { gamificationRoute } from "../modules/Gamification/gamification.route";
 import { levelRoute } from "../modules/Gamification/level.route";
+import { statisticsRoutes } from "../modules/Statistics/statistics.route";
 
 const router = express.Router();
 
@@ -100,6 +101,10 @@ const moduleRoutes = [
   {
     path: "/gamification/level",
     route: levelRoute,
+  },
+  {
+    path: "/statistics",
+    route: statisticsRoutes,
   },
 ];
 
