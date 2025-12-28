@@ -92,7 +92,7 @@ router.patch(
 
 // update user status access only for admin status (active to inactive)
 router.patch(
-  "/update-admin-status-active/:id",
+  "/update-user-status-inactive/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
   UserController.updateUserStatusInActiveToInActive
 );
