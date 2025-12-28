@@ -40,34 +40,21 @@ router.get(
 //get my profile
 router.get(
   "/my-profile",
-  auth(
-    UserRole.SUPER_ADMIN,
-    UserRole.ADMIN,
-    UserRole.VENDOR,
-    UserRole.USER
-  ),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
   UserController.getMyProfile
 );
 
 // get user by id
 router.get(
   "/:id",
-  auth(
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-    UserRole.USER,
-    UserRole.VENDOR
-  ),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER, UserRole.VENDOR),
   UserController.getUserById
 );
 
 // get user only partner
 router.get(
   "/inactive-partner/:id",
-  auth(
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-  ),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   UserController.getPartnerById
 );
 
@@ -103,11 +90,11 @@ router.patch(
   UserController.updatePartnerStatusRejected
 );
 
-// update admin status (inactive to active)
+// update user status access only for admin status (active to inactive)
 router.patch(
   "/update-admin-status-active/:id",
-  auth(UserRole.SUPER_ADMIN),
-  UserController.updateAdminStatusInActiveToActive
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  UserController.updateUserStatusInActiveToInActive
 );
 
 // update admin status rejected
@@ -120,12 +107,7 @@ router.patch(
 // single update user (info + profile image)
 router.patch(
   "/update",
-  auth(
-    UserRole.SUPER_ADMIN,
-    UserRole.ADMIN,
-    UserRole.VENDOR,
-    UserRole.USER
-  ),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
   uploadFile.profileImage,
   parseBodyData,
   validateRequest(userValidation.updateUserZodSchema),
@@ -135,12 +117,7 @@ router.patch(
 // update user profile image
 router.patch(
   "/profile-img-update",
-  auth(
-    UserRole.SUPER_ADMIN,
-    UserRole.ADMIN,
-    UserRole.VENDOR,
-    UserRole.USER
-  ),
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
   uploadFile.profileImage,
   UserController.updateUserProfileImage
 );

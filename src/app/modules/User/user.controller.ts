@@ -80,11 +80,11 @@ const getAllAdmins = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-// update admin status (inactive to active)
-const updateAdminStatusInActiveToActive = catchAsync(
+// update user status access only for admin status (active to inactive)
+const updateUserStatusInActiveToInActive = catchAsync(
   async (req: Request, res: Response) => {
     const id = req.params.id;
-    const result = await UserService.updateAdminStatusInActiveToActive(id);
+    const result = await UserService.updateUserStatusInActiveToInActive(id);
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
@@ -314,7 +314,7 @@ export const UserController = {
   verifyOtpAndCreateUser,
   getAllUsers,
   getAllAdmins,
-  updateAdminStatusInActiveToActive,
+  updateUserStatusInActiveToInActive,
   updateAdminStatusRejected,
   getAllBusinessPartners,
   getAllNeededApprovedPartners,

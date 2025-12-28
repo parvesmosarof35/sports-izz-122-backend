@@ -351,11 +351,11 @@ const getAllAdmins = async (
   };
 };
 
-// update admin status (inactive to active)
-const updateAdminStatusInActiveToActive = async (id: string) => {
+// update user status access only for admin status (active to inactive)
+const updateUserStatusInActiveToInActive = async (id: string) => {
   // find admin
   const admin = await prisma.user.findUnique({
-    where: { id, status: UserStatus.INACTIVE },
+    where: { id, status: UserStatus.ACTIVE },
   });
   if (!admin) {
     throw new ApiError(httpStatus.NOT_FOUND, "Admin not found");
@@ -366,7 +366,7 @@ const updateAdminStatusInActiveToActive = async (id: string) => {
       id,
     },
     data: {
-      status: UserStatus.ACTIVE,
+      status: UserStatus.INACTIVE,
     },
     select: {
       id: true,
@@ -956,7 +956,7 @@ export const UserService = {
   verifyOtpAndCreateUser,
   getAllUsers,
   getAllAdmins,
-  updateAdminStatusInActiveToActive,
+  updateUserStatusInActiveToInActive,
   updateAdminStatusRejected,
   getAllBusinessPartners,
   getAllNeededApprovedPartners,
