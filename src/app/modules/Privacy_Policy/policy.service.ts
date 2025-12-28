@@ -20,7 +20,6 @@ const createOrUpdatePolicy = async (
 
   const existPolicy = await prisma.privacy_Policy.findFirst();
 
-
   let result;
 
   if (existPolicy) {
