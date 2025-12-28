@@ -107,7 +107,7 @@ const getOverview = async (params: IFilterRequest) => {
     orderBy: {
       createdAt: "desc",
     },
-    take: 5,
+    take: 10,
   });
 
   return {
