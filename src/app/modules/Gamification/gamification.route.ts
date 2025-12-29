@@ -112,7 +112,7 @@ router.patch(
 );
 
 // delete badge
-router.delete(
+router.patch(
   "/badges/:badgeId",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   GamificationController.deleteBadge
