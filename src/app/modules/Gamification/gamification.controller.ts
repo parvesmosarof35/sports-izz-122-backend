@@ -12,11 +12,14 @@ import ApiError from "../../../errors/ApiErrors";
 // get user gamification profile
 const getUserProfile = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  
+
   if (!userId) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated or invalid user ID");
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      "User not authenticated or invalid user ID"
+    );
   }
-  
+
   const result = await GamificationService.getUserProfile(userId);
 
   sendResponse(res, {
@@ -30,11 +33,11 @@ const getUserProfile = catchAsync(async (req: Request, res: Response) => {
 // award XP to user
 const awardXP = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  
+
   if (!userId) {
     throw new ApiError(httpStatus.UNAUTHORIZED, "User not authenticated");
   }
-  
+
   const { action, description } = req.body;
   const result = await GamificationService.awardXP(userId, action, description);
 
@@ -92,6 +95,18 @@ const getUserBadges = catchAsync(async (req: Request, res: Response) => {
     statusCode: httpStatus.OK,
     success: true,
     message: "User badges retrieved successfully",
+    data: result,
+  });
+});
+
+// get all badges access only admin
+const getAllBadgesForAdmin = catchAsync(async (req: Request, res: Response) => {
+  const result = await GamificationService.getAllBadgesForAdmin();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Badges retrieved successfully",
     data: result,
   });
 });
@@ -215,6 +230,7 @@ export const GamificationController = {
   getLeaderboard,
   redeemPoints,
   getUserBadges,
+  getAllBadgesForAdmin,
   getUserAchievements,
   getUserStreaks,
   getXPHistory,

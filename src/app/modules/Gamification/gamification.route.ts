@@ -16,10 +16,18 @@ router.get(
   GamificationController.getUserProfile
 );
 
+// get user badges
 router.get(
   "/badges",
   auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   GamificationController.getUserBadges
+);
+
+// get all badges access only admin
+router.get(
+  "/all-badges",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  GamificationController.getAllBadgesForAdmin
 );
 
 // get user achievements

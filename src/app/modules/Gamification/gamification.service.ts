@@ -120,7 +120,7 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
         },
       },
     });
-    
+
     if (updatedProfile) {
       const badges = await getUserBadges(userId);
       const achievements = await getUserAchievements(userId);
@@ -643,6 +643,13 @@ const getUserBadges = async (userId: string): Promise<BadgeResponse[]> => {
   }));
 };
 
+// get all badges access only admin
+const getAllBadgesForAdmin = async (): Promise<BadgeResponse[]> => {
+  return await prisma.badge.findMany({
+    orderBy: { xpReward: "desc" },
+  });
+};
+
 // get user achievements
 const getUserAchievements = async (
   userId: string
@@ -751,6 +758,7 @@ export const GamificationService = {
   getLeaderboard,
   redeemPoints,
   getUserBadges,
+  getAllBadgesForAdmin,
   getUserAchievements,
   getUserStreaks,
   getXPHistory,
