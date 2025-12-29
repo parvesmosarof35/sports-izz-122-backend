@@ -306,6 +306,14 @@ const deleteMySupport = async (userId: string, supportId: string) => {
   return result;
 };
 
+// delete support
+const deleteSupport = async (supportId: string) => {
+  const result = await prisma.support.delete({
+    where: { id: supportId },
+  });
+  return result;
+};
+
 // update support status
 const updateSupportStatus = async (supportId: string) => {
   const result = await prisma.support.update({
@@ -322,5 +330,6 @@ export const SupportService = {
   getSupportById,
   updateMySupport,
   deleteMySupport,
+  deleteSupport,
   updateSupportStatus,
 };

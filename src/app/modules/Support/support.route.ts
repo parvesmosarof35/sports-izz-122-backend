@@ -47,6 +47,13 @@ router.delete(
   SupportController.deleteMySupport
 );
 
+// delete support
+router.delete(
+  "/:supportId",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  SupportController.deleteSupport
+);
+
 // update support status
 router.patch(
   "/update-support-status/:supportId",
