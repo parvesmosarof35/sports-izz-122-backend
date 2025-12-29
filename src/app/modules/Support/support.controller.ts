@@ -26,8 +26,8 @@ const createUserReport = catchAsync(async (req: Request, res: Response) => {
 
 // get all support
 const getAllSupport = catchAsync(async (req: Request, res: Response) => {
-      const filter = pick(req.query, filterField);
-      const options = pick(req.query, paginationFields);
+  const filter = pick(req.query, filterField);
+  const options = pick(req.query, paginationFields);
   const result = await SupportService.getAllSupport(filter, options);
   sendResponse(res, {
     statusCode: httpStatus.OK,
