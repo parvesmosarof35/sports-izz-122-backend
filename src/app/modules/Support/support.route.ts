@@ -43,7 +43,7 @@ router.patch(
 // delete my support
 router.delete(
   "/delete-my-support/:supportId",
-  auth(UserRole.USER, UserRole.VENDOR),
+  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   SupportController.deleteMySupport
 );
 
