@@ -752,6 +752,21 @@ const updateGamificationSettings = async (
   }
 };
 
+// active to inactive badge
+const activeBadge = async (badgeId: string): Promise<any> => {
+  return await prisma.badge.update({
+    where: { id: badgeId },
+    data: { isActive: false },
+  });
+};
+
+// delete badge
+const deleteBadge = async (badgeId: string): Promise<any> => {
+  return await prisma.badge.delete({
+    where: { id: badgeId },
+  });
+};
+
 export const GamificationService = {
   awardXP,
   getUserProfile,
@@ -766,4 +781,6 @@ export const GamificationService = {
   createAchievement,
   updateGamificationSettings,
   getGamificationSettings,
+  activeBadge,
+  deleteBadge,
 };

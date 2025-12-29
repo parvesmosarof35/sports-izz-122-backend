@@ -224,6 +224,32 @@ const getGamificationSettings = catchAsync(
   }
 );
 
+// active to inactive badge
+const activeBadge = catchAsync(async (req: Request, res: Response) => {
+  const badgeId = req.params.badgeId;
+  const result = await GamificationService.activeBadge(badgeId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Badge updated successfully",
+    data: result,
+  });
+});
+
+// delete badge
+const deleteBadge = catchAsync(async (req: Request, res: Response) => {
+  const badgeId = req.params.badgeId;
+  const result = await GamificationService.deleteBadge(badgeId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Badge deleted successfully",
+    data: result,
+  });
+});
+
 export const GamificationController = {
   getUserProfile,
   awardXP,
@@ -238,4 +264,6 @@ export const GamificationController = {
   createAchievement,
   updateGamificationSettings,
   getGamificationSettings,
+  activeBadge,
+  deleteBadge,
 };

@@ -104,4 +104,18 @@ router.patch(
   GamificationController.updateGamificationSettings
 );
 
+// active to inactive badge
+router.patch(
+  "/badges/:badgeId/active",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  GamificationController.activeBadge
+);
+
+// delete badge
+router.delete(
+  "/badges/:badgeId",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  GamificationController.deleteBadge
+);
+
 export const gamificationRoute = router;
