@@ -646,6 +646,7 @@ const getUserBadges = async (userId: string): Promise<BadgeResponse[]> => {
 // get all badges access only admin
 const getAllBadgesForAdmin = async (): Promise<BadgeResponse[]> => {
   return await prisma.badge.findMany({
+    where: { isDeleted: false },
     orderBy: { xpReward: "desc" },
   });
 };
@@ -762,8 +763,9 @@ const activeBadge = async (badgeId: string): Promise<any> => {
 
 // delete badge
 const deleteBadge = async (badgeId: string): Promise<any> => {
-  return await prisma.badge.delete({
+  return await prisma.badge.update({
     where: { id: badgeId },
+    data: { isDeleted: true },
   });
 };
 
