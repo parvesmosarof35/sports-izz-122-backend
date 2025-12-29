@@ -88,6 +88,9 @@ const getAllSupport = async (
     where,
     skip,
     take: limit,
+    include: {
+      user: true,
+    },
     orderBy:
       options.sortBy && options.sortOrder
         ? {
