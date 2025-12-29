@@ -15,8 +15,8 @@ router.get(
 // create support
 router.post(
   "/",
-  auth(UserRole.USER, UserRole.VENDOR),
-  SupportController.createSupport
+  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  SupportController.createUserReport
 );
 
 // get my support
@@ -29,12 +29,7 @@ router.get(
 // get support by id
 router.get(
   "/:id",
-  auth(
-    UserRole.ADMIN,
-    UserRole.SUPER_ADMIN,
-    UserRole.USER,
-    UserRole.VENDOR
-  ),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER, UserRole.VENDOR),
   SupportController.getSupportById
 );
 

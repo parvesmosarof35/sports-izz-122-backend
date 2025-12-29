@@ -7,15 +7,19 @@ import { pick } from "../../../shared/pick";
 import { filterField } from "./support.constant";
 import { paginationFields } from "../../../constants/pagination";
 
-// create support
-const createSupport = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.user?.id;
-  const data = req.body;
-  const result = await SupportService.createSupport(userId, data);
+// create user report
+const createUserReport = catchAsync(async (req: Request, res: Response) => {
+  const reporterId = req.user?.id;
+  const { reportedUserId, ...data } = req.body;
+  const result = await SupportService.createUserReport(
+    reporterId,
+    reportedUserId,
+    data
+  );
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: "Support created successfully",
+    message: "User report created successfully",
     data: result,
   });
 });
@@ -100,7 +104,7 @@ const updateSupportStatus = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const SupportController = {
-  createSupport,
+  createUserReport,
   getAllSupport,
   getMySupport,
   getSupportById,
