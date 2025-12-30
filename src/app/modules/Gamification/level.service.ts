@@ -166,9 +166,13 @@ const getAllLevels = async () => {
 
 // get single level
 const getSingleLevel = async (levelId: string) => {
-  return await prisma.level.findUnique({
+  const existingLevel = await prisma.level.findUnique({
     where: { id: levelId },
   });
+  if (!existingLevel) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Level not found");
+  }
+  return existingLevel;
 };
 
 // get level by XP
