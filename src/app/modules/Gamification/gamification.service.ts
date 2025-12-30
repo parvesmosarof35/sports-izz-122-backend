@@ -721,6 +721,8 @@ const createBadge = async (badgeData: any): Promise<any> => {
     iconUrl:
       iconUrl ||
       "https://res.cloudinary.com/your-cloud/image/upload/v1/default-badge.png",
+    xpReward: badgeData?.xpReward ? parseInt(badgeData.xpReward) : 0,
+    pointsReward: badgeData.pointsReward ? parseInt(badgeData.pointsReward) : 0,
   };
 
   return await prisma.badge.create({

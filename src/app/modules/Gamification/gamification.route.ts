@@ -77,7 +77,7 @@ router.post(
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
   uploadFile.iconUrl,
   parseBodyData,
-  validateRequest(gamificationValidation.createBadgeZodSchema),
+  // validateRequest(gamificationValidation.createBadgeZodSchema),
   GamificationController.createBadge
 );
 

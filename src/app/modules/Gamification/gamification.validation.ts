@@ -47,19 +47,13 @@ const createBadgeZodSchema = z.object({
       invalid_type_error: "Invalid badge type",
     }),
     xpReward: z
-      .number({
+      .string({
         invalid_type_error: "XP reward must be a number",
-      })
-      .nonnegative("XP reward cannot be negative")
-      .int("XP reward must be an integer")
-      .default(0),
+      }).default("0"),
     pointsReward: z
-      .number({
+      .string({
         invalid_type_error: "Points reward must be a number",
-      })
-      .nonnegative("Points reward cannot be negative")
-      .int("Points reward must be an integer")
-      .default(0),
+      }).default("0"),
   }),
 });
 
