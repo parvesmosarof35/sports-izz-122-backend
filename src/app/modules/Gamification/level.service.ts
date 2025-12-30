@@ -33,56 +33,112 @@ const createInitialLevels = async () => {
       title: "Journeyman",
       minXP: 300,
       maxXP: 499,
-      benefits: ["priority_booking", "15%_discount", "early_access", "vip_support"],
+      benefits: [
+        "priority_booking",
+        "15%_discount",
+        "early_access",
+        "vip_support",
+      ],
     },
     {
       level: 5,
       title: "Expert",
       minXP: 500,
       maxXP: 999,
-      benefits: ["priority_booking", "20%_discount", "early_access", "vip_support", "exclusive_events"],
+      benefits: [
+        "priority_booking",
+        "20%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+      ],
     },
     {
       level: 6,
       title: "Master",
       minXP: 1000,
       maxXP: 1499,
-      benefits: ["priority_booking", "25%_discount", "early_access", "vip_support", "exclusive_events", "free_cancellation"],
+      benefits: [
+        "priority_booking",
+        "25%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+        "free_cancellation",
+      ],
     },
     {
       level: 7,
       title: "Grandmaster",
       minXP: 1500,
       maxXP: 2499,
-      benefits: ["priority_booking", "30%_discount", "early_access", "vip_support", "exclusive_events", "free_cancellation", "personal_assistant"],
+      benefits: [
+        "priority_booking",
+        "30%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+        "free_cancellation",
+        "personal_assistant",
+      ],
     },
     {
       level: 8,
       title: "Legend",
       minXP: 2500,
       maxXP: 4999,
-      benefits: ["priority_booking", "35%_discount", "early_access", "vip_support", "exclusive_events", "free_cancellation", "personal_assistant", "premium_venues"],
+      benefits: [
+        "priority_booking",
+        "35%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+        "free_cancellation",
+        "personal_assistant",
+        "premium_venues",
+      ],
     },
     {
       level: 9,
       title: "Mythic",
       minXP: 5000,
       maxXP: 9999,
-      benefits: ["priority_booking", "40%_discount", "early_access", "vip_support", "exclusive_events", "free_cancellation", "personal_assistant", "premium_venues", "unlimited_bookings"],
+      benefits: [
+        "priority_booking",
+        "40%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+        "free_cancellation",
+        "personal_assistant",
+        "premium_venues",
+        "unlimited_bookings",
+      ],
     },
     {
       level: 10,
       title: "Immortal",
       minXP: 10000,
       maxXP: 999999,
-      benefits: ["priority_booking", "50%_discount", "early_access", "vip_support", "exclusive_events", "free_cancellation", "personal_assistant", "premium_venues", "unlimited_bookings", "lifetime_vip"],
+      benefits: [
+        "priority_booking",
+        "50%_discount",
+        "early_access",
+        "vip_support",
+        "exclusive_events",
+        "free_cancellation",
+        "personal_assistant",
+        "premium_venues",
+        "unlimited_bookings",
+        "lifetime_vip",
+      ],
     },
   ];
 
   try {
     // Clear existing levels
     await prisma.level.deleteMany();
-    
+
     // Create new levels
     const createdLevels = await prisma.level.createMany({
       data: levels,
@@ -94,7 +150,10 @@ const createInitialLevels = async () => {
       count: createdLevels.count,
     };
   } catch (error) {
-    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, "Failed to create levels");
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      "Failed to create levels"
+    );
   }
 };
 
@@ -102,6 +161,13 @@ const createInitialLevels = async () => {
 const getAllLevels = async () => {
   return await prisma.level.findMany({
     orderBy: { level: "asc" },
+  });
+};
+
+// get single level
+const getSingleLevel = async (levelId: string) => {
+  return await prisma.level.findUnique({
+    where: { id: levelId },
   });
 };
 
@@ -173,6 +239,7 @@ const deleteLevel = async (levelId: string) => {
 export const LevelService = {
   createInitialLevels,
   getAllLevels,
+  getSingleLevel,
   getLevelByXP,
   createLevel,
   updateLevel,

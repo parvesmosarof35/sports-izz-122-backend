@@ -30,10 +30,23 @@ const getAllLevels = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get level by id
+const getSingleLevel = catchAsync(async (req: Request, res: Response) => {
+  const levelId = req.params.levelId;
+  const result = await LevelService.getSingleLevel(levelId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Level retrieved successfully",
+    data: result,
+  });
+});
+
 // get level by XP
 const getLevelByXP = catchAsync(async (req: Request, res: Response) => {
   const { xp } = req.query;
-  
+
   if (!xp || isNaN(Number(xp))) {
     throw new Error("Valid XP is required");
   }
@@ -91,6 +104,7 @@ const deleteLevel = catchAsync(async (req: Request, res: Response) => {
 export const LevelController = {
   createInitialLevels,
   getAllLevels,
+  getSingleLevel,
   getLevelByXP,
   createLevel,
   updateLevel,
