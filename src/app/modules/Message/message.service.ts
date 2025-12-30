@@ -16,6 +16,26 @@ const sendMessage = async (
   message: string,
   imageUrls: string[]
 ) => {
+  // find sender
+  const user = await prisma.user.findUnique({
+    where: {
+      id: senderId,
+    },
+  });
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+  }
+
+  // find receiver
+  const receiver = await prisma.user.findUnique({
+    where: {
+      id: receiverId,
+    },
+  });
+  if (!receiver) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Receiver not found");
+  }
+
   const [person1, person2] = [senderId, receiverId].sort();
   const channelName = person1 + person2;
 
