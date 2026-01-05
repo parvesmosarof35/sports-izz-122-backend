@@ -159,6 +159,7 @@ const getAllVenues = async (
           scheduleSlots: true,
         },
       },
+      reviews: true,
     },
     skip,
     take: limit,
