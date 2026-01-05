@@ -63,6 +63,7 @@ export interface UserProfileResponse {
   badges: BadgeResponse[];
   achievements: AchievementProgress[];
   streaks: any[];
+  totalLevels?: number;
   user?: {
     fullName: string | null;
     email: string;

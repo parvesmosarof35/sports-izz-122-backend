@@ -125,6 +125,7 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
       const badges = await getUserBadges(userId);
       const achievements = await getUserAchievements(userId);
       const streaks = await getUserStreaks(userId);
+      const totalLevels = await prisma.level.count();
 
       return {
         ...updatedProfile,
@@ -132,6 +133,7 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
         achievements,
         streaks,
         user: updatedProfile.user,
+        totalLevels,
       };
     }
   }
@@ -140,12 +142,16 @@ const getUserProfile = async (userId: string): Promise<UserProfileResponse> => {
   const achievements = await getUserAchievements(userId);
   const streaks = await getUserStreaks(userId);
 
+  // Get total levels
+  const totalLevels = await prisma.level.count();
+
   return {
     ...profile,
     badges,
     achievements,
     streaks,
     user: profile.user,
+    totalLevels,
   };
 };
 
@@ -603,6 +609,9 @@ const createUserProfile = async (
     throw new Error("User ID is required to create profile");
   }
 
+  // Get total levels
+  const totalLevels = await prisma.level.count();
+
   const profile = await prisma.userProfile.create({
     data: { userId },
     include: {
@@ -621,6 +630,7 @@ const createUserProfile = async (
     badges: [],
     achievements: [],
     streaks: [],
+    totalLevels,
   };
 };
 
