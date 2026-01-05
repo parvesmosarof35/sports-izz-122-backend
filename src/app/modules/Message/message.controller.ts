@@ -12,7 +12,7 @@ import { filterField } from "./message.constant";
 const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const senderId = req.user?.id;
   const receiverId = req.params.receiverId;
-  const { message } = req.body;
+  const { subject, message } = req.body;
 
   // multer array => req.files as Express.Multer.File[]
   const files = req.files as Express.Multer.File[] | undefined;
@@ -33,6 +33,7 @@ const sendMessage = catchAsync(async (req: Request, res: Response) => {
   const result = await MessageServices.sendMessage(
     senderId!,
     receiverId,
+    subject,
     message,
     imageUrls
   );
@@ -112,7 +113,11 @@ const getUserChannels = catchAsync(async (req: Request, res: Response) => {
   const filter = pick(req.query, filterField);
   const options = pick(req.query, paginationFields);
 
-  const channels = await MessageServices.getUserChannels(userId, filter, options);
+  const channels = await MessageServices.getUserChannels(
+    userId,
+    filter,
+    options
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

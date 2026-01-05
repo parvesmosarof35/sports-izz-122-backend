@@ -13,6 +13,7 @@ import { searchableFields } from "./message.constant";
 const sendMessage = async (
   senderId: string,
   receiverId: string,
+  subject: string,
   message: string,
   imageUrls: string[]
 ) => {
@@ -65,6 +66,7 @@ const sendMessage = async (
       //  message created
       const newMessage = await prismaTransaction.message.create({
         data: {
+          subject,
           message,
           senderId,
           channelName: channelName,

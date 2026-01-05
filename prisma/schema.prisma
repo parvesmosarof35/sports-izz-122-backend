@@ -484,6 +484,7 @@ model Channel {
 
 model Message {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  subject   String? // no need other message
   message   String?
   files     String[]
   createdAt DateTime @default(now())
