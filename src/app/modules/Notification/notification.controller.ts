@@ -34,12 +34,8 @@ const sendNotifications = catchAsync(async (req: Request, res: Response) => {
 
 // get all notifications
 const getAllNotifications = catchAsync(async (req: Request, res: Response) => {
-  const adminId = req.user?.id;
   const options = pick(req.query, paginationFields);
-  const notifications = await NotificationService.getAllNotifications(
-    adminId,
-    options
-  );
+  const notifications = await NotificationService.getAllNotifications(options);
 
   sendResponse(res, {
     statusCode: 200,
@@ -109,6 +105,36 @@ const markAsReadNotification = catchAsync(
   }
 );
 
+// mark as unread notification
+const markAsUnreadNotification = catchAsync(
+  async (req: Request, res: Response) => {
+    const notificationId = req.params.notificationId;
+    const notification = await NotificationService.markAsUnreadNotification(
+      notificationId
+    );
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "Notification marked as read successfully",
+      data: notification,
+    });
+  }
+);
+
+// mark all as read notification
+const markAllAsReadNotification = catchAsync(
+  async (req: Request, res: Response) => {
+    // const userId = req.user?.id;
+    const notification = await NotificationService.markAllAsReadNotification();
+    sendResponse(res, {
+      success: true,
+      statusCode: 200,
+      message: "All notifications marked as read successfully",
+      data: notification,
+    });
+  }
+);
+
 export const NotificationController = {
   sendSingleNotification,
   sendNotifications,
@@ -117,4 +143,6 @@ export const NotificationController = {
   getMyNotifications,
   deleteNotification,
   markAsReadNotification,
+  markAsUnreadNotification,
+  markAllAsReadNotification,
 };

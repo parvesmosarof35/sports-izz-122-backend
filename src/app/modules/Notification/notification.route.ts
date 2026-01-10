@@ -54,4 +54,18 @@ router.patch(
   NotificationController.markAsReadNotification
 );
 
+// mark as unread notification
+router.patch(
+  "/mark-as-unread/:notificationId",
+  auth(),
+  NotificationController.markAsUnreadNotification
+);
+
+// mark all as read notification
+router.patch(
+  "/mark-all-as-read",
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  NotificationController.markAllAsReadNotification
+);
+
 export const notificationsRoute = router;

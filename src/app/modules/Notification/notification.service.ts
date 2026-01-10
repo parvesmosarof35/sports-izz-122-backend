@@ -112,39 +112,10 @@ const sendNotifications = async (req: any) => {
 };
 
 // get all notifications
-const getAllNotifications = async (
-  adminId: string,
-  options: IPaginationOptions
-) => {
-  // find admin
-  const user = await prisma.user.findUnique({
-    where: { id: adminId },
-    select: {
-      supportNotification: true,
-      paymentNotification: true,
-      emailNotification: true,
-    },
-  });
-
+const getAllNotifications = async (options: IPaginationOptions) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  // serviceTypes dynamically excluded
-  const excludedTypes: string[] = [];
-
-  if (user?.supportNotification === false) {
-    excludedTypes.push("SUPPORT");
-  }
-  if (user?.paymentNotification === false) {
-    excludedTypes.push("ATTRACTION", "CAR", "SECURITY", "HOTEL");
-  }
-  if (user?.emailNotification === false) {
-    excludedTypes.push("EMAIL");
-  }
-
   const where: any = {};
-  if (excludedTypes.length > 0) {
-    where.serviceTypes = { notIn: excludedTypes };
-  }
 
   const result = await prisma.notifications.findMany({
     where,
@@ -241,6 +212,33 @@ const markAsReadNotification = async (notificationId: string) => {
   });
 };
 
+// mark as unread notification
+const markAsUnreadNotification = async (notificationId: string) => {
+  // find notification
+  const notification = await prisma.notifications.findUnique({
+    where: {
+      id: notificationId,
+    },
+  });
+
+  if (!notification) {
+    throw new ApiError(404, "Notification not found");
+  }
+
+  return prisma.notifications.update({
+    where: { id: notificationId },
+    data: { read: false },
+  });
+};
+
+// mark all as read notification
+const markAllAsReadNotification = async () => {
+  return prisma.notifications.updateMany({
+    // where: { receiverId: userId },
+    data: { read: true },
+  });
+};
+
 export const NotificationService = {
   sendSingleNotification,
   sendNotifications,
@@ -249,4 +247,6 @@ export const NotificationService = {
   getMyNotifications,
   deleteNotification,
   markAsReadNotification,
+  markAsUnreadNotification,
+  markAllAsReadNotification,
 };
