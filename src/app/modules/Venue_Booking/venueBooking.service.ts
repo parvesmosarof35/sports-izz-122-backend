@@ -286,6 +286,9 @@ const getVendorVenueBookings = async (
   // filter vender
   filters.push({
     vendorId,
+    bookingStatus: {
+      in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED],
+    },
   });
 
   // sportsType filter
@@ -297,9 +300,12 @@ const getVendorVenueBookings = async (
     });
   }
 
-  // calculate booking status based on date
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // set to start of day
+  // calculate booking status based on date and time
+  const now = new Date();
+  const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHours * 60 + currentMinutes;
 
   const result = await prisma.venue_booking.findMany({
     where: {
@@ -340,25 +346,47 @@ const getVendorVenueBookings = async (
 
   // bookings to determine status based on date
   const processedBookings = result.map((booking) => {
-    const bookingDate = new Date(booking.date);
-    const daysDiff = Math.floor(
-      (today.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const bookingDate = booking.date; // assuming date is in YYYY-MM-DD format
+    const timeSlot = booking.timeSlot as { from: string; to: string };
 
     let status = "new_request"; // default status
 
     if (booking.bookingStatus === BookingStatus.COMPLETED) {
       status = "completed";
-    } else if (
-      booking.bookingStatus === BookingStatus.CONFIRMED &&
-      daysDiff > 1
-    ) {
-      status = "ongoing";
-    } else if (
-      booking.bookingStatus === BookingStatus.CONFIRMED &&
-      daysDiff <= 1
-    ) {
-      status = "new_request";
+    } else if (booking.bookingStatus === BookingStatus.CONFIRMED) {
+      if (bookingDate === today) {
+        // convert booking times to minutes for comparison
+        const bookingFromTime = timeSlot?.from || "00:00 AM";
+        const bookingToTime = timeSlot?.to || "23:59 PM";
+
+        // parse "02:00 AM" format to minutes
+        const parseTimeToMinutes = (timeStr: string) => {
+          const [time, period] = timeStr.split(" ");
+          const [hours, minutes] = time.split(":").map(Number);
+          let hours24 = hours;
+          if (period === "PM" && hours !== 12) hours24 += 12;
+          if (period === "AM" && hours === 12) hours24 = 0;
+          return hours24 * 60 + (minutes || 0);
+        };
+
+        const bookingFromMinutes = parseTimeToMinutes(bookingFromTime);
+        const bookingToMinutes = parseTimeToMinutes(bookingToTime);
+
+        if (
+          currentTimeInMinutes >= bookingFromMinutes &&
+          currentTimeInMinutes <= bookingToMinutes
+        ) {
+          status = "ongoing";
+        } else if (currentTimeInMinutes < bookingFromMinutes) {
+          status = "new_request";
+        } else {
+          status = "completed"; // past time slot for today
+        }
+      } else if (bookingDate > today) {
+        status = "new_request"; // future booking
+      } else {
+        status = "completed"; // past booking
+      }
     }
 
     return {
@@ -366,7 +394,6 @@ const getVendorVenueBookings = async (
       calculatedStatus: status,
     };
   });
-
   // filter by status if needed
   const filteredBookings = processedBookings.filter((booking) => {
     if (filter) {
