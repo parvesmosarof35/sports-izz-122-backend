@@ -194,6 +194,8 @@ const getMyVenueBookings = async (
           location: true,
           venueImage: true,
           pricePerHour: true,
+          venueRating: true,
+          venueReviewCount: true,
         },
       },
       user: {
@@ -320,6 +322,8 @@ const getVendorVenueBookings = async (
           location: true,
           venueImage: true,
           pricePerHour: true,
+          venueRating: true,
+          venueReviewCount: true,
         },
       },
       user: {
