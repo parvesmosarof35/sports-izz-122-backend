@@ -15,7 +15,7 @@ const sendMessage = async (
   receiverId: string,
   subject: string,
   message: string,
-  imageUrls: string[]
+  imageUrls: string[],
 ) => {
   // find sender
   const user = await prisma.user.findUnique({
@@ -84,7 +84,7 @@ const sendMessage = async (
       });
 
       return [channel, newMessage];
-    }
+    },
   );
 
   //  all messages channel for the sender and receiver
@@ -174,7 +174,7 @@ const getMyChannelByMyId = async (userId: string) => {
         channel.person2 &&
         channel.person2.status === UserStatus.ACTIVE &&
         ([UserRole.USER, UserRole.VENDOR] as UserRole[]).includes(
-          channel.person2.role
+          channel.person2.role,
         )
           ? channel.person2
           : null;
@@ -183,7 +183,7 @@ const getMyChannelByMyId = async (userId: string) => {
         channel.person1 &&
         channel.person1.status === UserStatus.ACTIVE &&
         ([UserRole.USER, UserRole.VENDOR] as UserRole[]).includes(
-          channel.person1.role
+          channel.person1.role,
         )
           ? channel.person1
           : null;
@@ -206,7 +206,7 @@ const getMyChannelByMyId = async (userId: string) => {
 const getMyChannelByMyIdForUserSupport = async (
   userId: string,
   params: IMessageFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   if (!ObjectId.isValid(userId)) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Invalid user id format");
@@ -317,13 +317,17 @@ const getMyChannel = async (userId: string, receiverId: string) => {
       channelName: channelName,
     },
   });
+  if (!channel) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Channel not found");
+  }
+
   return channel;
 };
 
 // get all messages
 const getMessagesFromDB = async (
   channelName: string,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -370,7 +374,7 @@ const getMessagesFromDB = async (
 const getUserChannels = async (
   userId: string,
   params: IMessageFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   const { searchTerm } = params;
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);

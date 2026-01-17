@@ -13,7 +13,7 @@ router.post(
   auth(),
   uploadFile.uploadMessageImages,
   parseBodyData,
-  messageControllers.sendMessage
+  messageControllers.sendMessage,
 );
 
 router.get("/channels", auth(), messageControllers.getUserChannels);
@@ -22,14 +22,14 @@ router.get("/channels", auth(), messageControllers.getUserChannels);
 router.get(
   "/my-channel-by-my-id/:userId",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  messageControllers.getMyChannelByMyId
+  messageControllers.getMyChannelByMyId,
 );
 
 // get my channel by my id for user support
 router.get(
   "/support-my-channel",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER),
-  messageControllers.getMyChannelByMyIdForUserSupport
+  messageControllers.getMyChannelByMyIdForUserSupport,
 );
 
 // get my channel through my id and receiver id
@@ -39,26 +39,21 @@ router.get("/my-channel/:receiverId", auth(), messageControllers.getMyChannel);
 router.get(
   "/get-message/:channelName",
   auth(),
-  messageControllers.getMessagesFromDB
+  messageControllers.getMessagesFromDB,
 );
 
 // get all channels only user and admin
 router.get(
   "/user-admin-channels",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER),
-  messageControllers.getUserAdminChannels
+  messageControllers.getUserAdminChannels,
 );
 
 // get single channel
 router.get(
   "/channel/:channelId",
-  auth(
-    UserRole.SUPER_ADMIN,
-    UserRole.ADMIN,
-    UserRole.USER,
-    UserRole.VENDOR
-  ),
-  messageControllers.getSingleChannel
+  auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.USER, UserRole.VENDOR),
+  messageControllers.getSingleChannel,
 );
 
 export const messageRoutes = router;
