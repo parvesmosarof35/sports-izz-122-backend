@@ -323,29 +323,13 @@ const getMyChannel = async (userId: string, receiverId: string) => {
       person2: true,
       createdAt: true,
       updatedAt: true,
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1, // only the last message
-        select: {
-          id: true,
-          subject: true,
-          message: true,
-          files: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-      },
     },
   });
   if (!channel) {
     throw new ApiError(httpStatus.NOT_FOUND, "Channel not found");
   }
 
-  // return channel;
-  return {
-    ...channel,
-    lastMessage: channel.messages[0] || null,
-  };
+  return channel;
 };
 
 // get all messages
@@ -470,8 +454,35 @@ const getUserChannels = async (
           profileImage: true,
         },
       },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1, // only the last message
+        select: {
+          id: true,
+          subject: true,
+          message: true,
+          files: true,
+          createdAt: true,
+          updatedAt: true,
+          sender: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
     },
   });
+
+  // map lastMessage for convenience
+  const channelsWithLastMessage = channels.map((channel) => ({
+    ...channel,
+    lastMessage: channel.messages[0] || null,
+    messages: undefined, // optional: remove messages array if not needed
+  }));
 
   // total count for pagination
   const total = await prisma.channel.count({ where });
@@ -482,7 +493,7 @@ const getUserChannels = async (
       page,
       limit,
     },
-    data: channels,
+    data: channelsWithLastMessage,
   };
 };
 
