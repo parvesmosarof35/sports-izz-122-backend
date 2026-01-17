@@ -316,6 +316,24 @@ const getMyChannel = async (userId: string, receiverId: string) => {
     where: {
       channelName: channelName,
     },
+    select: {
+      id: true,
+      channelName: true,
+      person1: true,
+      person2: true,
+      createdAt: true,
+      updatedAt: true,
+      messages: {
+        select: {
+          id: true,
+          subject: true,
+          message: true,
+          files: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      },
+    },
   });
   if (!channel) {
     throw new ApiError(httpStatus.NOT_FOUND, "Channel not found");
