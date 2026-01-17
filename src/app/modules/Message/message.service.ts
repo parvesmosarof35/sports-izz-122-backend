@@ -324,6 +324,8 @@ const getMyChannel = async (userId: string, receiverId: string) => {
       createdAt: true,
       updatedAt: true,
       messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1, // only the last message
         select: {
           id: true,
           subject: true,
@@ -339,7 +341,11 @@ const getMyChannel = async (userId: string, receiverId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Channel not found");
   }
 
-  return channel;
+  // return channel;
+  return {
+    ...channel,
+    lastMessage: channel.messages[0] || null,
+  };
 };
 
 // get all messages
