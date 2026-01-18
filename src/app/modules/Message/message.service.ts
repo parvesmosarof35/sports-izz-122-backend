@@ -316,13 +316,43 @@ const getMyChannel = async (userId: string, receiverId: string) => {
     where: {
       channelName: channelName,
     },
-    select: {
-      id: true,
-      channelName: true,
-      person1: true,
-      person2: true,
-      createdAt: true,
-      updatedAt: true,
+    include: {
+      person1: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profileImage: true,
+        },
+      },
+      person2: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          profileImage: true,
+        },
+      },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1, // only the last message
+        select: {
+          id: true,
+          subject: true,
+          message: true,
+          files: true,
+          createdAt: true,
+          updatedAt: true,
+          sender: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
     },
   });
   if (!channel) {
@@ -339,34 +369,29 @@ const getMessagesFromDB = async (
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
-  const message = await prisma.channel.findMany({
-    where: {
-      channelName: channelName,
-    },
+  // fetch messages
+  const messages = await prisma.message.findMany({
+    where: { channelName },
     skip,
     take: limit,
-    orderBy:
-      options.sortBy && options.sortOrder
-        ? { [options.sortBy]: options.sortOrder }
-        : {
-            createdAt: "desc",
-          },
-    select: {
-      messages: {
-        include: {
-          sender: {
-            select: {
-              id: true,
-              fullName: true,
-              profileImage: true,
-            },
-          },
+    orderBy: {
+      createdAt: "desc", // last message first
+    },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          fullName: true,
+          profileImage: true,
         },
       },
     },
   });
 
-  const total = await prisma.channel.count();
+  // total messages count for pagination
+  const total = await prisma.message.count({
+    where: { channelName },
+  });
 
   return {
     meta: {
@@ -374,7 +399,7 @@ const getMessagesFromDB = async (
       page,
       limit,
     },
-    data: message,
+    data: messages,
   };
 };
 
