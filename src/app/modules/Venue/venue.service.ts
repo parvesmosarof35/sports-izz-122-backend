@@ -92,7 +92,7 @@ const createVenue = async (vendorId: string, payload: IVenuePayload) => {
     },
     {
       timeout: 30000,
-    }
+    },
   );
 
   return result;
@@ -101,7 +101,7 @@ const createVenue = async (vendorId: string, payload: IVenuePayload) => {
 // get all venues
 const getAllVenues = async (
   params: IVenueFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -190,7 +190,7 @@ const getAllVenues = async (
 // get venue group by SportsType
 const getVenueGroupBySportsType = async (
   params: IVenueFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ) => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -307,11 +307,26 @@ const getVenueGroupBySportsType = async (
 };
 
 // get all my venues
-const getAllMyVenues = async (vendorId: string) => {
+const getAllMyVenues = async (
+  vendorId: string,
+  options: IPaginationOptions,
+) => {
+  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
+
   const result = await prisma.venue.findMany({
     where: {
       vendorId,
     },
+    skip,
+    take: limit,
+    orderBy:
+      options.sortBy && options.sortOrder
+        ? {
+            [options.sortBy]: options.sortOrder,
+          }
+        : {
+            createdAt: "desc",
+          },
     include: {
       venueAvailabilities: {
         include: {
@@ -320,7 +335,21 @@ const getAllMyVenues = async (vendorId: string) => {
       },
     },
   });
-  return result;
+
+  const total = await prisma.venue.count({
+    where: {
+      vendorId,
+    },
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: result,
+  };
 };
 
 // get single venue
@@ -348,7 +377,7 @@ const updateVenue = async (
     venueImage?: string;
     scheduleSlots?: any;
     venueAvailabilities?: any;
-  }
+  },
 ) => {
   // check if venue exists vendor
   const existingVenue = await prisma.venue.findFirst({
@@ -360,7 +389,7 @@ const updateVenue = async (
 
   if (!existingVenue) {
     throw new Error(
-      "Venue not found or you don't have permission to update it"
+      "Venue not found or you don't have permission to update it",
     );
   }
 
@@ -381,7 +410,7 @@ const updateVenue = async (
         ? payload.courtNumbers
         : Array.from(
             { length: parseInt(String(payload.courtNumbers)) },
-            (_, i) => i + 1
+            (_, i) => i + 1,
           )
       : undefined,
     // Parse string values to proper types
@@ -414,7 +443,9 @@ const updateVenue = async (
 
   // filter out undefined values
   const filteredUpdateData = Object.fromEntries(
-    Object.entries(validVenueFields).filter(([_, value]) => value !== undefined)
+    Object.entries(validVenueFields).filter(
+      ([_, value]) => value !== undefined,
+    ),
   );
 
   const result = await prisma.$transaction(
@@ -523,7 +554,7 @@ const updateVenue = async (
     },
     {
       timeout: 30000,
-    }
+    },
   );
 
   return result;
@@ -571,7 +602,7 @@ const deleteVenue = async (vendorId: string, venueId: string) => {
     },
     {
       timeout: 30000,
-    }
+    },
   );
 
   return result;
