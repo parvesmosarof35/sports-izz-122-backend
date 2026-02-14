@@ -11,7 +11,6 @@ import { notificationsRoute } from "../modules/Notification/notification.route";
 import { settingRoute } from "../modules/Setting/setting.route";
 import { termsConditionRoute } from "../modules/Terms_Condition/terms.route";
 import { messageRoutes } from "../modules/Message/message.route";
-import { phoneRoute } from "../modules/Setting/PhoneNumberVerify/phone.route";
 import { paymentRoutes } from "../modules/Payment/payment.route";
 import { supportRoutes } from "../modules/Support/support.route";
 import { faqRoutes } from "../modules/Faq/faq.routre";
@@ -78,10 +77,7 @@ const moduleRoutes = [
     path: "/settings",
     route: settingRoute,
   },
-  {
-    path: "/phone",
-    route: phoneRoute,
-  },
+
   {
     path: "/messages",
     route: messageRoutes,
