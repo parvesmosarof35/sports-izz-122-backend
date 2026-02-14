@@ -10,30 +10,12 @@ export default {
   port: process.env.PORT,
 
   // Payment configurations
-  stripe: {
-    secretKey: process.env.STRIPE_SECRET_KEY,
-    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY,
-    clientId: process.env.STRIPE_CLIENT_ID,
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-    refreshUrl: process.env.ONBOARDING_REFRESH_URL,
-    returnUrl: process.env.ONBOARDING_RETURN_URL,
-    checkout_success_url: process.env.CHECKOUT_SUCCESS_URL,
-    checkout_cancel_url: process.env.CHECKOUT_CANCEL_URL,
-  },
-
-  payStack: {
-    publicKey: process.env.PAYSTACK_PUBLISHABLE_KEY,
-    secretKey: process.env.PAYSTACK_SECRET_KEY,
-    webhookSecret: process.env.PAYSTACK_WEBHOOK_SECRET,
-  },
-
-  paypal: {
-    clientId: process.env.PAYPAL_CLIENT_ID,
-    clientSecret: process.env.PAYPAL_CLIENT_SECRET,
-    apiUrl:
-      process.env.NODE_ENV === "production"
-        ? "https://api.paypal.com"
-        : "https://api.sandbox.paypal.com",
+  toyyibpay: {
+    toyyibpay_secret_key: process.env.TOYYIB_SECRET_KEY,
+    toyyibpay_category_code: process.env.TOYYIB_CATEGORY_CODE,
+    toyyibpay_webhook_secret: process.env.TOYYIB_WEBHOOK_SECRET,
+    toyyibpay_return_url: process.env.TOYYIB_RETURN_URL,
+    toyyibpay_callback_url: process.env.TOYYIB_CALLBACK_URL,
   },
 
   jwt: {
@@ -56,29 +38,5 @@ export default {
     cloud_name: process.env.CLOUDINARY_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
-  },
-
-  s3: {
-    do_space_endpoint: process.env.DO_SPACE_ENDPOINT,
-    do_space_accesskey: process.env.DO_SPACE_ACCESS_KEY,
-    do_space_secret_key: process.env.DO_SPACE_SECRET_KEY,
-    do_space_bucket: process.env.DO_SPACE_BUCKET,
-  },
-
-  twilio: {
-    accountSid: process.env.TWILIO_ACCOUNT_SID,
-    authToken: process.env.TWILIO_AUTH_TOKEN,
-    twilioNumber: process.env.TWILIO_PHONE_NUMBER,
-  },
-
-  flutterwave: {
-    publicKey: process.env.FLUTTERWAVE_PUBLISHABLE_KEY,
-    secretKey: process.env.FLUTTERWAVE_SECRET_KEY,
-    encryptionKey: process.env.FLUTTERWAVE_ENCRYPTION_KEY,
-    webhookKey: process.env.FLUTTERWAVE_WEBHOOK_SECRET,
-
-    currency: process.env.CURRENCY || "USD",
-    ownerPayoutPercent: Number(process.env.OWNER_PAYOUT_PERCENT || 80),
-    ownerCommissionPercent: Number(process.env.OWNER_COMMISSION_PERCENT || 20),
   },
 };
