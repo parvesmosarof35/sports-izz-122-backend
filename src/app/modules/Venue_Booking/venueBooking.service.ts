@@ -151,7 +151,7 @@ const createVenueBooking = async (
   return result;
 };
 
-// get all specific user bookings
+// get all specific user booking
 const getMyVenueBookings = async (
   userId: string,
   params: IVenueBookingFilterRequest,
