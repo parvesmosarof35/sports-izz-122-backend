@@ -3,11 +3,9 @@ import httpStatus from "http-status";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { UserService } from "./user.service";
-import ApiError from "../../../errors/ApiErrors";
 import { pick } from "../../../shared/pick";
 import { filterField } from "./user.constant";
 import { paginationFields } from "../../../constants/pagination";
-import { isValidObjectId } from "../../../utils/validateObjectId";
 import { IUploadedFile } from "../../../interfaces/file";
 
 // create user
@@ -35,7 +33,7 @@ const createRoleSupperAdmin = catchAsync(
       message: "OTP generated and sent to email successfully",
       data: result,
     });
-  }
+  },
 );
 
 // verify user
@@ -49,7 +47,7 @@ const verifyOtpAndCreateUser = catchAsync(
       message: "User verified successfully",
       data: result,
     });
-  }
+  },
 );
 
 // get all users
@@ -91,37 +89,7 @@ const updateUserStatusInActiveToInActive = catchAsync(
       message: "Admin status updated successfully",
       data: result,
     });
-  }
-);
-
-// update admin status rejected
-const updateAdminStatusRejected = catchAsync(
-  async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const result = await UserService.updateAdminStatusRejected(id);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Admin status updated successfully",
-      data: result,
-    });
-  }
-);
-
-// get all business partners
-const getAllBusinessPartners = catchAsync(
-  async (req: Request, res: Response) => {
-    const filter = pick(req.query, filterField);
-    const options = pick(req.query, paginationFields);
-    const result = await UserService.getAllBusinessPartners(filter, options);
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Business Partners fetched successfully",
-      data: result,
-    });
-  }
+  },
 );
 
 // get all needed approved partners
@@ -131,7 +99,7 @@ const getAllNeededApprovedPartners = catchAsync(
     const options = pick(req.query, paginationFields);
     const result = await UserService.getAllNeededApprovedPartners(
       filter,
-      options
+      options,
     );
 
     sendResponse(res, {
@@ -140,7 +108,7 @@ const getAllNeededApprovedPartners = catchAsync(
       message: "Business Partners fetched successfully",
       data: result,
     });
-  }
+  },
 );
 
 // update partner status (inactive to active)
@@ -154,7 +122,7 @@ const updatePartnerStatusInActiveToActive = catchAsync(
       message: "Partner status updated successfully",
       data: result,
     });
-  }
+  },
 );
 
 // update partner status rejected
@@ -168,7 +136,7 @@ const updatePartnerStatusRejected = catchAsync(
       message: "Partner status updated successfully",
       data: result,
     });
-  }
+  },
 );
 
 // get user by id
@@ -241,7 +209,7 @@ const updateUserProfileImage = catchAsync(
       message: "My profile image updated successfully",
       data: result,
     });
-  }
+  },
 );
 
 // delete my account
@@ -294,19 +262,17 @@ const deleteAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 // update admin access only for super admin
-const updateAdminAccess = catchAsync(
-  async (req: Request, res: Response) => {
-    const id = req.params.id;
-    const data = req.body;
-    const result = await UserService.updateAdminAccess(id, data);
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: "Admin status updated successfully",
-      data: result,
-    });
-  }
-);
+const updateAdminAccess = catchAsync(async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const data = req.body;
+  const result = await UserService.updateAdminAccess(id, data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Admin status updated successfully",
+    data: result,
+  });
+});
 
 export const UserController = {
   createUser,
@@ -315,8 +281,6 @@ export const UserController = {
   getAllUsers,
   getAllAdmins,
   updateUserStatusInActiveToInActive,
-  updateAdminStatusRejected,
-  getAllBusinessPartners,
   getAllNeededApprovedPartners,
   updatePartnerStatusInActiveToActive,
   updatePartnerStatusRejected,

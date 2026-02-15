@@ -13,56 +13,49 @@ const router = express.Router();
 router.get(
   "/",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.getAllUsers
+  UserController.getAllUsers,
 );
 
 // get all admins
 router.get(
   "/admins",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER),
-  UserController.getAllAdmins
-);
-
-// get all business partners
-router.get(
-  "/business-partners",
-  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.getAllBusinessPartners
+  UserController.getAllAdmins,
 );
 
 // get all needed approved partners
 router.get(
   "/approved-partners",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.getAllNeededApprovedPartners
+  UserController.getAllNeededApprovedPartners,
 );
 
 //get my profile
 router.get(
   "/my-profile",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
-  UserController.getMyProfile
+  UserController.getMyProfile,
 );
 
 // get user by id
 router.get(
   "/:id",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER, UserRole.VENDOR),
-  UserController.getUserById
+  UserController.getUserById,
 );
 
 // get user only partner
 router.get(
   "/inactive-partner/:id",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.getPartnerById
+  UserController.getPartnerById,
 );
 
 // create user
 router.post(
   "/",
   validateRequest(userValidation.createUserZodSchema),
-  UserController.createUser
+  UserController.createUser,
 );
 
 // create role for supper admin
@@ -70,7 +63,7 @@ router.post(
   "/add-role",
   auth(UserRole.SUPER_ADMIN),
   validateRequest(userValidation.createUserZodSchema),
-  UserController.createRoleSupperAdmin
+  UserController.createRoleSupperAdmin,
 );
 
 // verify user
@@ -80,28 +73,21 @@ router.post("/verify-user", UserController.verifyOtpAndCreateUser);
 router.patch(
   "/update-partner-status-active/:id",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.updatePartnerStatusInActiveToActive
+  UserController.updatePartnerStatusInActiveToActive,
 );
 
 // update partner status rejected
 router.patch(
   "/update-partner-status-reject/:id",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  UserController.updatePartnerStatusRejected
+  UserController.updatePartnerStatusRejected,
 );
 
 // update user status access only for admin status (active to inactive)
 router.patch(
   "/update-user-status-inactive/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  UserController.updateUserStatusInActiveToInActive
-);
-
-// update admin status rejected
-router.patch(
-  "/update-admin-status-reject/:id",
-  auth(UserRole.SUPER_ADMIN),
-  UserController.updateAdminStatusRejected
+  UserController.updateUserStatusInActiveToInActive,
 );
 
 // single update user (info + profile image)
@@ -111,7 +97,7 @@ router.patch(
   uploadFile.profileImage,
   parseBodyData,
   validateRequest(userValidation.updateUserZodSchema),
-  UserController.updateUser
+  UserController.updateUser,
 );
 
 // update user profile image
@@ -119,35 +105,35 @@ router.patch(
   "/profile-img-update",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.VENDOR, UserRole.USER),
   uploadFile.profileImage,
-  UserController.updateUserProfileImage
+  UserController.updateUserProfileImage,
 );
 
 // delete my account
 router.patch(
   "/my-account",
   auth(UserRole.USER, UserRole.VENDOR),
-  UserController.deleteMyAccount
+  UserController.deleteMyAccount,
 );
 
 // update admin access only for super admin
 router.patch(
   "/update-super-admin-access/:id",
   auth(UserRole.SUPER_ADMIN),
-  UserController.updateAdminAccess
+  UserController.updateAdminAccess,
 );
 
 // delete user
 router.delete(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
-  UserController.deleteUser
+  UserController.deleteUser,
 );
 
 // delete admin
 router.delete(
   "/admin/:id",
   auth(UserRole.SUPER_ADMIN),
-  UserController.deleteAdmin
+  UserController.deleteAdmin,
 );
 
 export const userRoute = router;

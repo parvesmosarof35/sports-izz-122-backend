@@ -7,15 +7,7 @@ import {
   PaymentStatus,
 } from "@prisma/client";
 import config from "../../../config";
-import Stripe from "stripe";
-import { serviceConfig, ServiceType } from "./Stripe/stripe";
 import axios from "axios";
-import {
-  BookingNotificationService,
-  IBookingNotificationData,
-  ServiceTypes,
-} from "../../../shared/notificationService";
-import * as crypto from "crypto";
 
 const callback_url = "https://paystack.com/pay";
 const payStackBaseUrl = "https://api.paystack.co";

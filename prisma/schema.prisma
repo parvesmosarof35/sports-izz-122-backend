@@ -122,19 +122,16 @@ model User {
   updatedAt DateTime @updatedAt
 
   // relationships
-  payment        Payment[]
-  notifications  Notifications[]
-  hotel          Hotel[]
-  room           Room[]
-  review         Review[]
-  hotel_bookings Hotel_Booking[]
-  favorite       Favorite[]
-  sender         Channel[]       @relation("ChannelPerson1")
-  receiver       Channel[]       @relation("ChannelPerson2")
-  messages       Message[]       @relation("sentMessages")
-  support        Support[]
-  venues         Venue[]
-  venueBookings  Venue_booking[]
+  payment       Payment[]
+  notifications Notifications[]
+  review        Review[]
+  favorite      Favorite[]
+  sender        Channel[]       @relation("ChannelPerson1")
+  receiver      Channel[]       @relation("ChannelPerson2")
+  messages      Message[]       @relation("sentMessages")
+  support       Support[]
+  venues        Venue[]
+  venueBookings Venue_booking[]
 
   // gamification relationships
   userProfile      UserProfile?
@@ -184,6 +181,7 @@ model Venue {
   user          User?           @relation(fields: [vendorId], references: [id])
   venueBookings Venue_booking[]
   reviews       Review[]
+  payments      Payment[]
 
   @@map("venues")
 }
@@ -249,123 +247,6 @@ model SportType {
   @@map("sport_types")
 }
 
-model Hotel {
-  id                     String   @id @default(auto()) @map("_id") @db.ObjectId
-  hotelBusinessName      String   @unique
-  hotelName              String
-  hotelBusinessType      String
-  hotelRegNum            String
-  hotelRegDate           String
-  hotelPhone             String
-  hotelEmail             String
-  businessTagline        String
-  businessDescription    String
-  businessLogo           String // @default("https://i.ibb.co/zWxSgQL8/download.png")
-  hotelBookingCondition  String
-  hotelCancelationPolicy String
-  hotelDocs              String[]
-  hotelLate              Float?
-  hotelLong              Float?
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-
-  // relationships
-  user           User            @relation(fields: [partnerId], references: [id])
-  partnerId      String          @db.ObjectId
-  hotel_bookings Hotel_Booking[]
-  favorite       Favorite[]
-  room           Room[]
-
-  @@map("hotels")
-}
-
-model Room {
-  id                            String             @id @default(auto()) @map("_id") @db.ObjectId
-  hotelRoomType                 String
-  hotelAC                       Boolean
-  hotelParking                  Boolean
-  hoitelWifi                    Boolean
-  hotelBreakfast                Boolean
-  hotelPool                     Boolean
-  hotelRating                   String
-  hotelSmoking                  Boolean
-  hotelTv                       Boolean
-  hotelWashing                  Boolean
-  hotelRoomDescription          String
-  hotelAddress                  String
-  hotelCity                     String
-  hotelPostalCode               String
-  hotelDistrict                 String
-  hotelCountry                  String
-  hotelImages                   String[] // 5 image
-  hotelRoomImages               String[] // 5 image
-  hotelRoomCapacity             String
-  hotelNumberOfRooms            Int
-  hotelNumAdults                Int
-  hotelNumChildren              Int
-  hotelAccommodationType        String
-  hotelKitchen                  Boolean
-  hotelRestaurant               Boolean
-  hotelGym                      Boolean
-  hotelSpa                      Boolean
-  hotel24HourFrontDesk          Boolean
-  hotelAirportShuttle           Boolean
-  hotelNoSmokingPreference      Boolean
-  hotelNoNSmoking               Boolean
-  hotelPetsAllowed              Boolean
-  hotelNoPetsPreferences        Boolean
-  hotelPetsNotAllowed           Boolean
-  hotelLocationFeatureWaterView Boolean
-  hotelLocationFeatureIsland    Boolean
-  hotelCoffeeBar                Boolean
-  category                      String
-  hotelRoomPriceNight           Float
-  discount                      Float              @default(0)
-  isBooked                      EveryServiceStatus @default(AVAILABLE)
-  isFavorite                    Boolean            @default(false)
-  hotelReviewCount              Int                @default(0)
-  createdAt                     DateTime           @default(now())
-  updatedAt                     DateTime           @updatedAt
-
-  // relationships
-  hotelId        String?         @db.ObjectId
-  hotel          Hotel?          @relation(fields: [hotelId], references: [id])
-  user           User?           @relation(fields: [partnerId], references: [id])
-  partnerId      String?         @db.ObjectId
-  hotel_bookings Hotel_Booking[]
-  favorite       Favorite[]
-
-  @@map("rooms")
-}
-
-model Hotel_Booking {
-  id                String        @id @default(auto()) @map("_id") @db.ObjectId
-  checkoutSessionId String?
-  rooms             Int
-  adults            Int
-  children          Int
-  bookedFromDate    String
-  bookedToDate      String
-  totalPrice        Float
-  specialRequest    String?
-  bookingStatus     BookingStatus @default(PENDING)
-  category          String?
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
-
-  // relationships
-  partnerId String    @db.ObjectId
-  hotel     Hotel     @relation(fields: [hotelId], references: [id])
-  hotelId   String    @db.ObjectId
-  user      User?     @relation(fields: [userId], references: [id])
-  userId    String?   @db.ObjectId
-  payment   Payment[]
-  room      Room?     @relation(fields: [roomId], references: [id])
-  roomId    String?   @db.ObjectId
-
-  @@map("hotel_bookings")
-}
-
 model Review {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   rating     Float
@@ -387,14 +268,9 @@ model Favorite {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   user      User     @relation(fields: [userId], references: [id])
   userId    String   @db.ObjectId
-  hotel     Hotel    @relation(fields: [hotelId], references: [id])
-  hotelId   String   @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  room      Room?    @relation(fields: [roomId], references: [id])
-  roomId    String?  @db.ObjectId
 
-  @@unique([userId, roomId])
   @@map("favorites")
 }
 
@@ -500,36 +376,26 @@ model Message {
 }
 
 model Payment {
-  id               String          @id @default(auto()) @map("_id") @db.ObjectId
-  amount           Float
-  description      String?
-  currency         String?
-  sessionId        String?         @unique
-  paymentMethod    String?
-  status           PaymentStatus
-  // status           String
-  provider         PaymentProvider
-  payable_name     String?
-  payable_email    String?
-  payment_intent   String?
-  country          String?
-  admin_commission Float?
-  service_fee      Float?
-  paystack_fee     Float?
-  transactionId    String?
-  serviceType      String // HOTEL | SECURITY | CAR | ATTRACTION
-  partnerId        String          @db.ObjectId
-  isDeleted        Boolean         @default(false)
-  metadata         Json? // extra(fullName, email, contactNumber, country, description etc).
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  amount            Float
+  description       String?
+  currency          String?
+  sessionId         String?       @unique
+  status            PaymentStatus
+  payable_name      String?
+  payable_email     String?
+  paymentIntentId   String?
+  country           String?
+  admin_commission  Float?
+  vendor_commission Float?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   // Relations
-  user            User           @relation(fields: [userId], references: [id])
-  userId          String         @db.ObjectId
-  hotel_booking   Hotel_Booking? @relation(fields: [hotel_bookingId], references: [id])
-  hotel_bookingId String?        @db.ObjectId
-
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String         @db.ObjectId
+  venue          Venue?         @relation(fields: [venueId], references: [id])
+  venueId        String?        @db.ObjectId
   venueBooking   Venue_booking? @relation(fields: [venueBookingId], references: [id])
   venueBookingId String?        @db.ObjectId
 

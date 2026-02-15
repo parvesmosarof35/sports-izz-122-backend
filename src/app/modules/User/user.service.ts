@@ -18,8 +18,6 @@ import { IUploadedFile } from "../../../interfaces/file";
 import { uploadFile } from "../../../helpars/fileUploader";
 import { Request } from "express";
 import { getDateRange } from "../../../helpars/filterByDate";
-// import emailSender from "../../../helpars/emailSender";
-// import { createOtpEmailTemplate } from "../../../utils/createOtpEmailTemplate";
 
 // create user
 const createUser = async (payload: any) => {
@@ -130,7 +128,7 @@ const verifyOtpAndCreateUser = async (email: string, otp: string) => {
     await prisma.user.delete({ where: { id: user.id } });
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      "OTP has expired, please register again"
+      "OTP has expired, please register again",
     );
   }
 
@@ -163,7 +161,7 @@ const verifyOtpAndCreateUser = async (email: string, otp: string) => {
 // get all users
 const getAllUsers = async (
   params: IFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ): Promise<IGenericResponse<SafeUser[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -273,7 +271,7 @@ const getAllUsers = async (
 // get all admins
 const getAllAdmins = async (
   params: IFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ): Promise<IGenericResponse<SafeUser[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -386,165 +384,10 @@ const updateUserStatusInActiveToInActive = async (id: string) => {
   return result;
 };
 
-// update admin status rejected
-const updateAdminStatusRejected = async (id: string) => {
-  // find admin
-  const admin = await prisma.user.findUnique({
-    where: { id, status: UserStatus.INACTIVE },
-  });
-  if (!admin) {
-    throw new ApiError(httpStatus.NOT_FOUND, "Admin not found");
-  }
-
-  const result = await prisma.user.update({
-    where: {
-      id,
-    },
-    data: {
-      status: UserStatus.REJECTED,
-    },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      profileImage: true,
-      contactNumber: true,
-      address: true,
-      country: true,
-      role: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-  return result;
-};
-
-// get all business partners
-const getAllBusinessPartners = async (
-  params: IFilterRequest,
-  options: IPaginationOptions
-): Promise<IGenericResponse<SafeUser[]>> => {
-  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
-
-  const { searchTerm, timeRange, ...filterData } = params;
-
-  const filters: Prisma.UserWhereInput[] = [];
-
-  // Filter for active users and role VENDOR only
-  filters.push({
-    role: UserRole.VENDOR,
-    status: UserStatus.ACTIVE,
-  });
-
-  // text search
-  if (params?.searchTerm) {
-    filters.push({
-      OR: searchableFields.map((field) => ({
-        [field]: {
-          contains: params.searchTerm,
-          mode: "insensitive",
-        },
-      })),
-    });
-  }
-
-  // Exact search filter
-  if (Object.keys(filterData).length > 0) {
-    filters.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
-    });
-  }
-
-  // timeRange filter
-  if (timeRange) {
-    const dateRange = getDateRange(timeRange);
-    if (dateRange) {
-      filters.push({
-        createdAt: dateRange,
-      });
-    }
-  }
-
-  const where: Prisma.UserWhereInput = { AND: filters };
-
-  const result = await prisma.user.findMany({
-    where,
-    skip,
-    take: limit,
-    orderBy:
-      options.sortBy && options.sortOrder
-        ? {
-            [options.sortBy]: options.sortOrder,
-          }
-        : {
-            createdAt: "desc",
-          },
-    select: {
-      id: true,
-      fullName: true,
-      email: true,
-      profileImage: true,
-      contactNumber: true,
-      address: true,
-      country: true,
-      role: true,
-      fcmToken: true,
-      status: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
-
-  const businessPartnerIds = result.map((partner) => partner.id);
-
-  const serviceFeeByPartner = await prisma.payment.groupBy({
-    by: ["partnerId"],
-    where: {
-      partnerId: {
-        in: businessPartnerIds,
-      },
-      isDeleted: false,
-      service_fee: {
-        not: null,
-      },
-    },
-    _sum: {
-      service_fee: true,
-    },
-  });
-
-  const serviceFeeMap = new Map();
-  serviceFeeByPartner.forEach((item) => {
-    serviceFeeMap.set(item.partnerId, item._sum.service_fee || 0);
-  });
-
-  // add totalServiceFee
-  const usersWithServiceFee = result.map((user) => ({
-    ...user,
-    totalServiceFee: serviceFeeMap.get(user.id) || 0,
-  }));
-
-  const total = await prisma.user.count({ where });
-
-  return {
-    meta: {
-      page,
-      limit,
-      total,
-    },
-    data: usersWithServiceFee,
-  };
-};
-
 // get all needed approved partners
 const getAllNeededApprovedPartners = async (
   params: IFilterRequest,
-  options: IPaginationOptions
+  options: IPaginationOptions,
 ): Promise<IGenericResponse<SafeUser[]>> => {
   const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
 
@@ -755,7 +598,7 @@ const getPartnerById = async (id: string): Promise<SafeUser> => {
 const updateUser = async (
   id: string,
   updates: IUpdateUser,
-  file?: IUploadedFile
+  file?: IUploadedFile,
 ): Promise<SafeUser> => {
   const user = await prisma.user.findUnique({
     where: { id, status: UserStatus.ACTIVE },
@@ -828,7 +671,7 @@ const getMyProfile = async (id: string) => {
 // update user profile image
 const updateUserProfileImage = async (
   id: string,
-  req: Request
+  req: Request,
 ): Promise<IProfileImageResponse> => {
   console.log(req.file, "req.file in user service");
   const userInfo = await prisma.user.findUnique({
@@ -878,7 +721,7 @@ const deleteMyAccount = async (userId: string) => {
 // delete user
 const deleteUser = async (
   userId: string,
-  loggedId: string
+  loggedId: string,
 ): Promise<User | void> => {
   if (!ObjectId.isValid(userId)) {
     throw new ApiError(400, "Invalid user ID format");
@@ -957,8 +800,6 @@ export const UserService = {
   getAllUsers,
   getAllAdmins,
   updateUserStatusInActiveToInActive,
-  updateAdminStatusRejected,
-  getAllBusinessPartners,
   getAllNeededApprovedPartners,
   updatePartnerStatusInActiveToActive,
   updatePartnerStatusRejected,
