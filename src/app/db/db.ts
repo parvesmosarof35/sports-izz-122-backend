@@ -1,6 +1,6 @@
 import { UserRole } from "@prisma/client";
-import bcrypt from "bcrypt";
 import prisma from "../../shared/prisma";
+import bcrypt from "bcryptjs";
 
 export const initiateSuperAdmin = async () => {
   const payload = {
