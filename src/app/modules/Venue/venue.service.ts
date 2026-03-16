@@ -283,7 +283,7 @@ const getVenueGroupBySportsType = async (
         sportsType,
         venues: [],
         count: 0,
-        sportsImage: sportsTypeMap[sportsType] || null,
+        sportsImage: sportsTypeMap[sportsType.toUpperCase()] || null,
       };
     }
     acc[sportsType].venues.push(venue);
