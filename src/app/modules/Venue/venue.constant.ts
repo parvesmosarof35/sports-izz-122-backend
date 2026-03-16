@@ -24,9 +24,8 @@ export const filterField: string[] = [
 
 export const searchableFields: string[] = [
   "venueName",
+  "sportsType",
   "location",
-  //  "capacity",
-    //  "venueStatus",
 ];
 
 export const numericFields = ["pricePerHour"];
