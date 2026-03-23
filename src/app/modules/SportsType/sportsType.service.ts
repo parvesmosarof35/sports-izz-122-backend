@@ -58,11 +58,21 @@ const getAllSportsTypes = async (
   // exact field match filters
   if (Object.keys(filterData).length > 0) {
     filters.push({
-      AND: Object.keys(filterData).map((key) => ({
-        [key]: {
-          equals: (filterData as any)[key],
-        },
-      })),
+      AND: Object.keys(filterData).map((key) => {
+        if (key === "sportName") {
+          return {
+            [key]: {
+              contains: (filterData as any)[key],
+              mode: "insensitive",
+            },
+          };
+        }
+        return {
+          [key]: {
+            equals: (filterData as any)[key],
+          },
+        };
+      }),
     });
   }
 
