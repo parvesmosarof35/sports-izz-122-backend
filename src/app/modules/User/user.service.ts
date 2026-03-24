@@ -737,9 +737,20 @@ const deleteMyAccount = async (userId: string) => {
     throw new Error("User not found");
   }
 
-  await prisma.user.delete({
-    where: { id: userId },
-  });
+  await prisma.$transaction([
+    prisma.userProfile.deleteMany({ where: { userId } }),
+    prisma.xPHistory.deleteMany({ where: { userId } }),
+    prisma.userBadge.deleteMany({ where: { userId } }),
+    prisma.userAchievement.deleteMany({ where: { userId } }),
+    prisma.userStreak.deleteMany({ where: { userId } }),
+    prisma.review.deleteMany({ where: { userId } }),
+    prisma.favorite.deleteMany({ where: { userId } }),
+    prisma.payment.deleteMany({ where: { userId } }),
+    prisma.message.deleteMany({ where: { senderId: userId } }),
+    prisma.user.delete({
+      where: { id: userId },
+    }),
+  ]);
 };
 
 // delete user
@@ -764,10 +775,21 @@ const deleteUser = async (
     throw new ApiError(404, "User not found");
   }
 
-  // Delete the user
-  await prisma.user.delete({
-    where: { id: userId },
-  });
+  // Cascade delete dependent records
+  await prisma.$transaction([
+    prisma.userProfile.deleteMany({ where: { userId } }),
+    prisma.xPHistory.deleteMany({ where: { userId } }),
+    prisma.userBadge.deleteMany({ where: { userId } }),
+    prisma.userAchievement.deleteMany({ where: { userId } }),
+    prisma.userStreak.deleteMany({ where: { userId } }),
+    prisma.review.deleteMany({ where: { userId } }),
+    prisma.favorite.deleteMany({ where: { userId } }),
+    prisma.payment.deleteMany({ where: { userId } }),
+    prisma.message.deleteMany({ where: { senderId: userId } }),
+    prisma.user.delete({
+      where: { id: userId },
+    }),
+  ]);
 
   return;
 };
