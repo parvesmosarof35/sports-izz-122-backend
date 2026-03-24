@@ -26,6 +26,8 @@ const createUserZodSchema = z.object({
     role: z.nativeEnum(UserRole).optional(),
     fcmToken: z.string().optional(),
     status: z.nativeEnum(UserStatus).optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 
@@ -37,6 +39,8 @@ export const updateUserZodSchema = z.object({
     address: z.string().optional(),
     country: z.string().optional(),
     profileImage: z.string().optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 

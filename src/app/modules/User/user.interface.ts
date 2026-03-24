@@ -10,6 +10,8 @@ export type TUser = {
   country?: string;
   role: UserRole;
   status: UserStatus;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type IUpdateUser = {
@@ -20,6 +22,8 @@ export type IUpdateUser = {
   country?: string;
   profileImage?: string;
   dateOfBirth?: Date;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type IFilterRequest = {
@@ -46,6 +50,8 @@ export type SafeUser = {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type IProfileImageResponse = {

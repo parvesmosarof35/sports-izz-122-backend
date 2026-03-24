@@ -22,6 +22,10 @@ router.post(
 // get all venues
 router.get("/", VenueController.getAllVenues);
 
+
+// get all venues nearbyme
+router.get("/nearby-me", VenueController.getAllNearbyVenues);
+
 // get venue group by SportsType
 router.get("/group-by-sports-type", VenueController.getVenueGroupBySportsType);
 

@@ -30,8 +30,8 @@ export default {
   reset_pass_link: process.env.RESET_PASS_LINK,
 
   emailSender: {
-    email: process.env.EMAIL,
-    app_pass: process.env.APP_PASS,
+    email: process.env.NODEMAILER_EMAIL || process.env.EMAIL,
+    app_pass: process.env.NODEMAILER_PASSWORD || process.env.APP_PASS,
   },
 
   cloudinary: {

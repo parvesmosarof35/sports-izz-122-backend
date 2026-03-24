@@ -18,9 +18,19 @@ import { IUploadedFile } from "../../../interfaces/file";
 import { uploadFile } from "../../../helpars/fileUploader";
 import { Request } from "express";
 import { getDateRange } from "../../../helpars/filterByDate";
+import { getCoordinatesFromAddress } from "../../../helpars/geocode";
 
 // create user
 const createUser = async (payload: any) => {
+  // get lat and long from address
+  if (payload.address && (payload.latitude === undefined || payload.longitude === undefined)) {
+    const coords = await getCoordinatesFromAddress(payload.address);
+    if (coords) {
+      payload.latitude = coords.latitude;
+      payload.longitude = coords.longitude;
+    }
+  }
+
   // check if email exists
   const existingUser = await prisma.user.findUnique({
     where: { email: payload.email },
@@ -553,6 +563,8 @@ const getUserById = async (id: string): Promise<SafeUser> => {
       contactNumber: true,
       address: true,
       country: true,
+      latitude: true,
+      longitude: true,
       role: true,
       fcmToken: true,
       status: true,
@@ -580,6 +592,8 @@ const getPartnerById = async (id: string): Promise<SafeUser> => {
       contactNumber: true,
       address: true,
       country: true,
+      latitude: true,
+      longitude: true,
       role: true,
       fcmToken: true,
       status: true,
@@ -600,6 +614,15 @@ const updateUser = async (
   updates: IUpdateUser,
   file?: IUploadedFile,
 ): Promise<SafeUser> => {
+  // get lat and long from address if address is updated and coords not explicitly provided
+  if (updates.address && (updates.latitude === undefined || updates.longitude === undefined)) {
+    const coords = await getCoordinatesFromAddress(updates.address);
+    if (coords) {
+      updates.latitude = coords.latitude;
+      updates.longitude = coords.longitude;
+    }
+  }
+
   const user = await prisma.user.findUnique({
     where: { id, status: UserStatus.ACTIVE },
   });
@@ -630,6 +653,8 @@ const updateUser = async (
       address: true,
       country: true,
       dateOfBirth: true,
+      latitude: true,
+      longitude: true,
       role: true,
       fcmToken: true,
       status: true,
@@ -712,9 +737,8 @@ const deleteMyAccount = async (userId: string) => {
     throw new Error("User not found");
   }
 
-  await prisma.user.update({
+  await prisma.user.delete({
     where: { id: userId },
-    data: { status: UserStatus.INACTIVE },
   });
 };
 

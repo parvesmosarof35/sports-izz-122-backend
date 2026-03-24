@@ -10,9 +10,19 @@ import { IVenue, IVenueFilterRequest, IVenuePayload } from "./venue.interface";
 import { Prisma, Weekday } from "@prisma/client";
 import { IPaginationOptions } from "../../../interfaces/paginations";
 import { paginationHelpers } from "../../../helpars/paginationHelper";
+import { getCoordinatesFromAddress, calculateDistanceInKm } from "../../../helpars/geocode";
 
 // create venue
 const createVenue = async (vendorId: string, payload: IVenuePayload) => {
+  // get coordinates from location if not provided
+  if (payload.location && (payload.latitude === undefined || payload.longitude === undefined)) {
+    const coords = await getCoordinatesFromAddress(payload.location);
+    if (coords) {
+      payload.latitude = coords.latitude;
+      payload.longitude = coords.longitude;
+    }
+  }
+
   // generate court numbers array if courtNumbers is provided as count
   const processedPayload = {
     ...payload,
@@ -184,6 +194,98 @@ const getAllVenues = async (
       limit,
     },
     data: result,
+  };
+};
+
+// get all nearby venues
+const getAllNearbyVenues = async (
+  params: IVenueFilterRequest,
+  options: IPaginationOptions,
+  locationParams: any
+) => {
+  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
+
+  const { searchTerm, minPrice, maxPrice, ...filterData } = params;
+
+  // convert string to number for price filters
+  const minPriceNum = minPrice ? Number(minPrice) : undefined;
+  const maxPriceNum = maxPrice ? Number(maxPrice) : undefined;
+
+  const filters: Prisma.VenueWhereInput[] = [];
+
+  // text search
+  if (params?.searchTerm) {
+    filters.push({
+      OR: searchableFields.map((field) => ({
+        [field]: {
+          contains: params.searchTerm,
+          mode: "insensitive",
+        },
+      })),
+    });
+  }
+
+  // price range filter
+  if (minPriceNum !== undefined || maxPriceNum !== undefined) {
+    const priceFilter: any = {};
+    if (minPriceNum !== undefined) priceFilter.gte = minPriceNum;
+    if (maxPriceNum !== undefined) priceFilter.lte = maxPriceNum;
+
+    filters.push({
+      pricePerHour: priceFilter,
+    });
+  }
+
+  // exact match filter
+  if (Object.keys(filterData).length > 0) {
+    filters.push({
+      AND: Object.keys(filterData).map((key) => ({
+        [key]: {
+          equals: (filterData as any)[key],
+        },
+      })),
+    });
+  }
+
+  const where: Prisma.VenueWhereInput = {
+    AND: filters,
+  };
+
+  const result = await prisma.venue.findMany({
+    where,
+    include: {
+      venueAvailabilities: {
+        include: {
+          scheduleSlots: true,
+        },
+      },
+      reviews: true,
+    },
+  });
+
+  const userLat = Number(locationParams.userslatitude);
+  const userLon = Number(locationParams.userslongitude);
+
+  const venuesWithDistance = result.map((venue: any) => {
+    let distance = Number.MAX_VALUE;
+    if (venue.latitude !== null && venue.longitude !== null && !isNaN(userLat) && !isNaN(userLon)) {
+      distance = calculateDistanceInKm(userLat, userLon, venue.latitude, venue.longitude);
+    }
+    return { ...venue, distance };
+  });
+
+  // sort by distance ascending
+  venuesWithDistance.sort((a, b) => a.distance - b.distance);
+
+  const paginatedData = venuesWithDistance.slice(skip, skip + limit);
+
+  return {
+    meta: {
+      total: venuesWithDistance.length,
+      page,
+      limit,
+    },
+    data: paginatedData,
   };
 };
 
@@ -427,6 +529,14 @@ const updateVenue = async (
   const { scheduleSlots, venueAvailabilities, ...updateData } =
     processedPayload;
 
+  if (updateData.location && (updateData.latitude === undefined || updateData.longitude === undefined)) {
+    const coords = await getCoordinatesFromAddress(updateData.location);
+    if (coords) {
+      updateData.latitude = coords.latitude;
+      updateData.longitude = coords.longitude;
+    }
+  }
+
   // remove invalid fields from venue update
   const validVenueFields = {
     venueName: updateData.venueName,
@@ -439,6 +549,8 @@ const updateVenue = async (
     venueImage: updateData.venueImage,
     amenities: updateData.amenities,
     courtNumbers: updateData.courtNumbers,
+    latitude: updateData.latitude,
+    longitude: updateData.longitude,
   };
 
   // filter out undefined values
@@ -611,6 +723,7 @@ const deleteVenue = async (vendorId: string, venueId: string) => {
 export const VenueService = {
   createVenue,
   getAllVenues,
+  getAllNearbyVenues,
   getVenueGroupBySportsType,
   getAllMyVenues,
   getSingleVenue,

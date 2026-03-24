@@ -20,6 +20,8 @@ export interface IVenue {
   amenities: Array<{ amenityName: string /**amenityImage: string  */ }>;
   courtNumbers: number | number[];
   venueStatus?: boolean;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface IVenuePayload extends IVenue {

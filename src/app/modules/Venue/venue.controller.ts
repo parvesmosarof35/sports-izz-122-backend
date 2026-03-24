@@ -51,6 +51,21 @@ const getAllVenues = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get all nearby venues
+const getAllNearbyVenues = catchAsync(async (req: Request, res: Response) => {
+  const filter = pick(req.query, filterField);
+  const options = pick(req.query, paginationFields);
+  const locationParams = pick(req.query, ["userslatitude", "userslongitude", "maxDistance"]);
+
+  const result = await VenueService.getAllNearbyVenues(filter, options, locationParams);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Nearby venues retrieved successfully!",
+    data: result,
+  });
+});
+
 // get venue group by SportsType
 const getVenueGroupBySportsType = catchAsync(
   async (req: Request, res: Response) => {
@@ -142,6 +157,7 @@ const deleteVenue = catchAsync(async (req: Request, res: Response) => {
 export const VenueController = {
   createVenue,
   getAllVenues,
+  getAllNearbyVenues,
   getVenueGroupBySportsType,
   getAllMyVenues,
   getSingleVenue,

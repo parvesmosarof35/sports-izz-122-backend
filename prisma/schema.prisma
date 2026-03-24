@@ -94,6 +94,8 @@ model User {
   contactNumber   String?
   address         String?
   country         String?
+  latitude        Float?
+  longitude       Float?
   role            UserRole   @default(USER)
   status          UserStatus @default(ACTIVE)
   fcmToken        String?    @default("")
@@ -163,6 +165,8 @@ model Venue {
   pricePerHour        Float
   capacity            Int
   location            String
+  latitude            Float?
+  longitude           Float?
   venueStatus         Boolean             @default(true)
   description         String
   venueImage          String

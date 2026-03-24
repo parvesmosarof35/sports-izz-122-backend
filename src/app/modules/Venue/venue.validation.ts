@@ -42,6 +42,8 @@ const createVenueValidation = z.object({
         })
       )
       .optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 
@@ -88,6 +90,8 @@ const updateVenueValidation = z.object({
         })
       )
       .optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 

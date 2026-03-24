@@ -122,7 +122,14 @@ router.patch(
   UserController.updateAdminAccess,
 );
 
-// delete user
+// delete my account
+router.delete(
+  "/delete-my-account/:id",
+  auth(UserRole.USER, UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserController.deleteMyAccount,
+);
+
+// delete user (Admin only)
 router.delete(
   "/:id",
   auth(UserRole.SUPER_ADMIN, UserRole.ADMIN),
