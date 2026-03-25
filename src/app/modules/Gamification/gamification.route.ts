@@ -89,10 +89,10 @@ router.post(
   GamificationController.createAchievement
 );
 
-// admin: get settings
+// get settings (accessible by all users)
 router.get(
   "/settings",
-  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  auth(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.USER, UserRole.VENDOR),
   GamificationController.getGamificationSettings
 );
 

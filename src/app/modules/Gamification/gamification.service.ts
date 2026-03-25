@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import ApiError from "../../../errors/ApiErrors";
+import httpStatus from "http-status";
 import {
   XPResponse,
   UserProfileResponse,
@@ -20,7 +22,30 @@ const awardXP = async (
 ): Promise<XPResponse> => {
   const settings = await getGamificationSettings();
   if (!settings.isActive) {
-    throw new Error("Gamification is currently disabled");
+    throw new ApiError(httpStatus.BAD_REQUEST, "Gamification is currently disabled");
+  }
+
+  // Prevent multiple daily login claims in a single day
+  if (action === "DAILY_LOGIN") {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const alreadyClaimed = await prisma.xPHistory.findFirst({
+      where: {
+        userId,
+        actionType: "DAILY_LOGIN",
+        createdAt: {
+          gte: today,
+        },
+      },
+    });
+
+    if (alreadyClaimed) {
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        "Daily login points can only be claimed once per day"
+      );
+    }
   }
 
   let baseXP = 0;
@@ -263,17 +288,26 @@ const calculateStreakBonus = async (
   userId: string,
   action: GamificationAction
 ): Promise<number> => {
-  // Skip streak calculation for now - return 0
-  return 0;
-
-  // TODO: Implement streak tracking later
-  /*
+  const settings = await getGamificationSettings();
   const streakType =
     action === "DAILY_LOGIN"
       ? "login"
       : action === "BOOKING"
       ? "booking"
-      : "review";
+      : action === "REVIEW"
+      ? "review"
+      : null;
+
+  // We only track streaks for specific actions
+  if (!streakType) {
+    return 0;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let currentStreak = 1;
+  let bonusXP = 0;
 
   const streak = await prisma.userStreak.findUnique({
     where: {
@@ -284,11 +318,57 @@ const calculateStreakBonus = async (
     },
   });
 
-  if (!streak) return 0;
+  if (streak) {
+    const lastActive = new Date(streak.lastActiveDate);
+    lastActive.setHours(0, 0, 0, 0);
 
-  const settings = await getGamificationSettings();
-  return streak.currentStreak * settings.streakBonusXP;
-  */
+    const daysDiff = Math.floor(
+      (today.getTime() - lastActive.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    let bestStreak = streak.bestStreak;
+
+    if (daysDiff === 1) {
+      currentStreak = streak.currentStreak + 1;
+      bestStreak = Math.max(bestStreak, currentStreak);
+      bonusXP = currentStreak * settings.streakBonusXP;
+    } else if (daysDiff === 0) {
+      currentStreak = streak.currentStreak;
+      // Already awarded bonus for today
+      bonusXP = 0;
+    } else {
+      currentStreak = 1;
+      bonusXP = settings.streakBonusXP; // First day of new streak
+    }
+
+    await prisma.userStreak.update({
+      where: { id: streak.id },
+      data: {
+        currentStreak,
+        bestStreak,
+        lastActiveDate: new Date(),
+        bonusXP: {
+          increment: bonusXP
+        } // storing historical bonus xp earned from this streak
+      },
+    });
+
+  } else {
+    // Brand new streak
+    bonusXP = settings.streakBonusXP;
+    await prisma.userStreak.create({
+      data: {
+        userId,
+        streakType,
+        currentStreak: 1,
+        bestStreak: 1,
+        lastActiveDate: new Date(),
+        bonusXP
+      },
+    });
+  }
+
+  return bonusXP;
 };
 
 // update user profile
