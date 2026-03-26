@@ -11,6 +11,7 @@ import {
   AchievementType,
   GamificationSettings,
 } from "./gamification.interface";
+import { REWARD_COSTS } from "./gamification.constant";
 
 const prisma = new PrismaClient();
 
@@ -251,23 +252,49 @@ const redeemPoints = async (
   pointsToRedeem: number,
   rewardType: string
 ): Promise<any> => {
+  // Security Fix: Enforce true cost from backend constants
+  const actualCost = REWARD_COSTS[rewardType as keyof typeof REWARD_COSTS];
+  
+  if (!actualCost) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid reward type selected");
+  }
+
+  if (pointsToRedeem !== actualCost) {
+    throw new ApiError(httpStatus.BAD_REQUEST, `Security Error: You are trying to redeem ${pointsToRedeem} points, but ${rewardType} costs exactly ${actualCost} points.`);
+  }
+
   const profile = await prisma.userProfile.findUnique({ where: { userId } });
-  if (!profile || profile.atlasPoints < pointsToRedeem) {
-    throw new Error("Insufficient points");
+  if (!profile || profile.atlasPoints < actualCost) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Insufficient points in your account");
   }
 
   // Update user points
   const updatedProfile = await prisma.userProfile.update({
     where: { userId },
     data: {
-      atlasPoints: profile.atlasPoints - pointsToRedeem,
+      atlasPoints: profile.atlasPoints - actualCost,
     },
   });
+
+  // History Fix: Log redemption as a Notification without changing existing Database Schema
+  try {
+    await prisma.notifications.create({
+      data: {
+        receiverId: userId,
+        title: "Points Redeemed!",
+        message: "points_redeemed",
+        body: `You successfully redeemed ${actualCost} Atlas Points to get the ${rewardType} reward. Your new balance is ${updatedProfile.atlasPoints} Points.`,
+        serviceTypes: "Gamification",
+      }
+    });
+  } catch (error) {
+    console.error("Failed to write to notification history for redemption", error);
+  }
 
   return {
     success: true,
     remainingPoints: updatedProfile.atlasPoints,
-    redeemedPoints: pointsToRedeem,
+    redeemedPoints: actualCost,
     rewardType,
   };
 };
@@ -657,6 +684,7 @@ const updateAchievements = async (
         id: achievement.id,
         name: achievement.name,
         description: achievement.description,
+        iconUrl: (achievement as any).iconUrl || "https://i.ibb.co/yJJ4q0f/icon.png",
         progress,
         targetValue: achievement.targetValue,
         isCompleted,
@@ -754,6 +782,7 @@ const getUserAchievements = async (
     id: ua.achievement.id,
     name: ua.achievement.name,
     description: ua.achievement.description,
+    iconUrl: (ua.achievement as any).iconUrl || "https://i.ibb.co/yJJ4q0f/icon.png",
     progress: ua.progress,
     targetValue: ua.achievement.targetValue,
     isCompleted: ua.isCompleted,

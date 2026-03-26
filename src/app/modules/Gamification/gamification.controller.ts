@@ -183,6 +183,19 @@ const createBadge = catchAsync(async (req: Request, res: Response) => {
 // admin: create achievement
 const createAchievement = catchAsync(async (req: Request, res: Response) => {
   const achievementData = req.body;
+
+  // upload achievement icon
+  if (req.file) {
+    const uploadedIcon = await uploadFile.uploadToCloudinary(req.file);
+    if (uploadedIcon?.secure_url) {
+      achievementData.iconUrl = uploadedIcon.secure_url;
+    }
+  }
+
+  if (!achievementData.iconUrl) {
+    achievementData.iconUrl = "https://i.ibb.co/yJJ4q0f/icon.png";
+  }
+
   const result = await GamificationService.createAchievement(achievementData);
 
   sendResponse(res, {

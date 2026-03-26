@@ -13,6 +13,8 @@ import {
   ISignupRequest,
   ISignupResponse,
 } from "./auth.interface";
+import { GamificationService } from "../Gamification/gamification.service";
+import { GamificationAction } from "../Gamification/gamification.interface";
 
 // login user
 const loginUser = async (payload: ILoginRequest): Promise<ILoginResponse> => {
@@ -156,8 +158,7 @@ const socialLogin = async (payload: any) => {
 
 // website login after booking
 const loginWebsite = async (payload: ISignupRequest) => {
-  const { fullName, email, password, contactNumber, country, fcmToken, role } =
-    payload;
+  const { fullName, email, password, contactNumber, country, fcmToken, role, referralCode } = payload;
 
   // check if user already exists
   const existingUser = await prisma.user.findUnique({
@@ -179,8 +180,22 @@ const loginWebsite = async (payload: ISignupRequest) => {
     );
   }
 
+  // Handle referral logic
+  let referredBy = undefined;
+  if (referralCode) {
+    const referrer = await prisma.user.findUnique({
+      where: { referralCode }
+    });
+    if (referrer) {
+      referredBy = referrer.id;
+    }
+  }
+
+  // generate unique code for new user
+  const newReferralCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
   // hash password
-  const hashedPassword = await bcrypt.hash(password, 12);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // create user
   const newUser = await prisma.user.create({
@@ -193,8 +208,23 @@ const loginWebsite = async (payload: ISignupRequest) => {
       role: (role as UserRole) || UserRole.USER,
       status: UserStatus.ACTIVE,
       fcmToken: fcmToken || "",
+      referralCode: newReferralCode,
+      referredBy,
     },
   });
+
+  // Award Gamification XP for successful referral
+  if (referredBy) {
+    try {
+      await GamificationService.awardXP(
+        referredBy, 
+        GamificationAction.REFERRAL, 
+        `Your friend ${fullName || email} joined using your referral code!`
+      );
+    } catch (err) {
+      console.error("Failed to award Referral XP:", err);
+    }
+  }
 
   // generate token
   const accessToken = jwtHelpers.generateToken(
@@ -230,6 +260,7 @@ const loginWebsite = async (payload: ISignupRequest) => {
       country: newUser.country,
       role: newUser.role,
       fcmToken: newUser.fcmToken,
+      referralCode: newUser.referralCode,
     },
   };
 

@@ -85,6 +85,7 @@ export interface AchievementProgress {
   id: string;
   name: string;
   description: string;
+  iconUrl?: string | null;
   progress: number;
   targetValue: number;
   isCompleted: boolean;

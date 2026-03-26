@@ -21,6 +21,7 @@ export interface ISignupRequest {
   country: string;
   fcmToken?: string;
   role: string;
+  referralCode?: string;
 }
 
 export interface ISignupResponse {
@@ -35,5 +36,6 @@ export interface ISignupResponse {
     country: string | null;
     role: string;
     fcmToken?: string | null;
+    referralCode?: string | null;
   };
 }

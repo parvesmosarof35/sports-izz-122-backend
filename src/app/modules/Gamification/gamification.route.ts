@@ -85,7 +85,9 @@ router.post(
 router.post(
   "/achievements",
   auth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validateRequest(gamificationValidation.createAchievementZodSchema),
+  uploadFile.iconUrl,
+  parseBodyData,
+  // validateRequest(gamificationValidation.createAchievementZodSchema), // Commented out to parse multipart correctly
   GamificationController.createAchievement
 );
 
