@@ -47,8 +47,7 @@ const createVenueBooking = async (
   if (!venue.courtNumbers.includes(payload.courtNumber)) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      `Court number ${
-        payload.courtNumber
+      `Court number ${payload.courtNumber
       } is not available at this venue. Available courts: ${venue.courtNumbers.join(
         ", "
       )}`
@@ -177,9 +176,12 @@ const getMyVenueBookings = async (
     });
   }
 
-  // calculate booking status based on date
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // set to start of day
+  // calculate booking status based on date and time
+  const now = new Date();
+  const today = now.toLocaleDateString("en-CA"); // YYYY-MM-DD format in local timezone
+  const currentHours = now.getHours();
+  const currentMinutes = now.getMinutes();
+  const currentTimeInMinutes = currentHours * 60 + currentMinutes;
 
   const result = await prisma.venue_booking.findMany({
     where: {
@@ -213,34 +215,61 @@ const getMyVenueBookings = async (
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },
   });
 
   // bookings to determine status based on date
   const processedBookings = result.map((booking) => {
-    const bookingDate = new Date(booking.date);
-    const daysDiff = Math.floor(
-      (today.getTime() - bookingDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
+    const bookingDate = booking.date; // assuming date is in YYYY-MM-DD format
+    const timeSlot = booking.timeSlot as { from: string; to: string };
 
-    let status = "new_request"; // default status
+    let status = "new-request"; // default status
 
     if (booking.bookingStatus === BookingStatus.COMPLETED) {
       status = "completed";
+    } else if (booking.bookingStatus === BookingStatus.CANCELLED) {
+      status = "cancelled";
     } else if (
-      booking.bookingStatus === BookingStatus.CONFIRMED &&
-      daysDiff > 1
+      booking.bookingStatus === BookingStatus.CONFIRMED ||
+      booking.bookingStatus === BookingStatus.PENDING
     ) {
-      status = "ongoing";
-    } else if (
-      booking.bookingStatus === BookingStatus.CONFIRMED &&
-      daysDiff <= 1
-    ) {
-      status = "new_request";
+      if (bookingDate === today) {
+        // convert booking times to minutes for comparison
+        const bookingFromTime = timeSlot?.from || "00:00 AM";
+        const bookingToTime = timeSlot?.to || "23:59 PM";
+
+        // parse "02:00 AM" format to minutes
+        const parseTimeToMinutes = (timeStr: string) => {
+          const [time, period] = timeStr.split(" ");
+          const [hours, minutes] = time.split(":").map(Number);
+          let hours24 = hours;
+          if (period === "PM" && hours !== 12) hours24 += 12;
+          if (period === "AM" && hours === 12) hours24 = 0;
+          return hours24 * 60 + (minutes || 0);
+        };
+
+        const bookingFromMinutes = parseTimeToMinutes(bookingFromTime);
+        const bookingToMinutes = parseTimeToMinutes(bookingToTime);
+
+        if (
+          currentTimeInMinutes >= bookingFromMinutes &&
+          currentTimeInMinutes <= bookingToMinutes
+        ) {
+          status = "ongoing";
+        } else if (currentTimeInMinutes > bookingToMinutes) {
+          status = "completed"; // past time slot for today
+        } else {
+          status = "new-request";
+        }
+      } else if (bookingDate > today) {
+        status = "new-request"; // future booking
+      } else {
+        status = "completed"; // past booking
+      }
     }
 
     return {
@@ -253,8 +282,11 @@ const getMyVenueBookings = async (
   const filteredBookings = processedBookings.filter((booking) => {
     if (filter) {
       // Handle both singular and plural forms
-      if (filter === "new-requests") {
-        return booking.calculatedStatus === "new_request";
+      if (filter === "new-requests" || filter === "new-request") {
+        return (
+          booking.calculatedStatus === "new-request" ||
+          booking.calculatedStatus === "cancelled"
+        );
       }
       return booking.calculatedStatus === filter;
     }
@@ -289,7 +321,12 @@ const getVendorVenueBookings = async (
   filters.push({
     vendorId,
     bookingStatus: {
-      in: [BookingStatus.CONFIRMED, BookingStatus.COMPLETED],
+      in: [
+        BookingStatus.CONFIRMED,
+        BookingStatus.COMPLETED,
+        BookingStatus.PENDING,
+        BookingStatus.CANCELLED,
+      ],
     },
   });
 
@@ -341,11 +378,11 @@ const getVendorVenueBookings = async (
     orderBy:
       options.sortBy && options.sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
-          }
+          [options.sortBy]: options.sortOrder,
+        }
         : {
-            createdAt: "desc",
-          },
+          createdAt: "desc",
+        },
   });
 
   // bookings to determine status based on date
@@ -353,11 +390,16 @@ const getVendorVenueBookings = async (
     const bookingDate = booking.date; // assuming date is in YYYY-MM-DD format
     const timeSlot = booking.timeSlot as { from: string; to: string };
 
-    let status = "new_request"; // default status
+    let status = "new-request"; // default status
 
     if (booking.bookingStatus === BookingStatus.COMPLETED) {
       status = "completed";
-    } else if (booking.bookingStatus === BookingStatus.CONFIRMED) {
+    } else if (booking.bookingStatus === BookingStatus.CANCELLED) {
+      status = "cancelled";
+    } else if (
+      booking.bookingStatus === BookingStatus.CONFIRMED ||
+      booking.bookingStatus === BookingStatus.PENDING
+    ) {
       if (bookingDate === today) {
         // convert booking times to minutes for comparison
         const bookingFromTime = timeSlot?.from || "00:00 AM";
@@ -381,13 +423,13 @@ const getVendorVenueBookings = async (
           currentTimeInMinutes <= bookingToMinutes
         ) {
           status = "ongoing";
-        } else if (currentTimeInMinutes < bookingFromMinutes) {
-          status = "new_request";
-        } else {
+        } else if (currentTimeInMinutes > bookingToMinutes) {
           status = "completed"; // past time slot for today
+        } else {
+          status = "new-request";
         }
       } else if (bookingDate > today) {
-        status = "new_request"; // future booking
+        status = "new-request"; // future booking
       } else {
         status = "completed"; // past booking
       }
@@ -402,8 +444,11 @@ const getVendorVenueBookings = async (
   const filteredBookings = processedBookings.filter((booking) => {
     if (filter) {
       // Handle both singular and plural forms
-      if (filter === "new-requests") {
-        return booking.calculatedStatus === "new_request";
+      if (filter === "new-requests" || filter === "new-request") {
+        return (
+          booking.calculatedStatus === "new-request" ||
+          booking.calculatedStatus === "cancelled"
+        );
       }
       return booking.calculatedStatus === filter;
     }
@@ -519,6 +564,112 @@ const updateVenueBooking = async (
   return result;
 };
 
+// accept venue booking
+const acceptVenueBooking = async (bookingId: string, vendorId: string) => {
+  const existingBooking = await prisma.venue_booking.findUnique({
+    where: { id: bookingId },
+  });
+
+  if (!existingBooking) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Venue booking not found!");
+  }
+
+  if (existingBooking.vendorId !== vendorId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You don't have permission to accept this booking!"
+    );
+  }
+
+  if (existingBooking.bookingStatus !== BookingStatus.PENDING) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot accept a booking that is currently ${existingBooking.bookingStatus}`
+    );
+  }
+
+  const result = await prisma.venue_booking.update({
+    where: { id: bookingId },
+    data: { bookingStatus: BookingStatus.CONFIRMED },
+    include: {
+      venue: {
+        select: {
+          id: true,
+          venueName: true,
+          sportsType: true,
+          location: true,
+          venueImage: true,
+          pricePerHour: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          contactNumber: true,
+        },
+      },
+      payment: true,
+    },
+  });
+
+  return result;
+};
+
+// reject venue booking
+const rejectVenueBooking = async (bookingId: string, vendorId: string) => {
+  const existingBooking = await prisma.venue_booking.findUnique({
+    where: { id: bookingId },
+  });
+
+  if (!existingBooking) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Venue booking not found!");
+  }
+
+  if (existingBooking.vendorId !== vendorId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You don't have permission to reject this booking!"
+    );
+  }
+
+  if (existingBooking.bookingStatus !== BookingStatus.PENDING) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      `Cannot reject a booking that is currently ${existingBooking.bookingStatus}`
+    );
+  }
+
+  const result = await prisma.venue_booking.update({
+    where: { id: bookingId },
+    data: { bookingStatus: BookingStatus.CANCELLED },
+    include: {
+      venue: {
+        select: {
+          id: true,
+          venueName: true,
+          sportsType: true,
+          location: true,
+          venueImage: true,
+          pricePerHour: true,
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          contactNumber: true,
+        },
+      },
+      payment: true,
+    },
+  });
+
+  return result;
+};
+
 // delete venue booking (admin only)
 const deleteVenueBooking = async (bookingId: string) => {
   // check if booking exists
@@ -530,8 +681,10 @@ const deleteVenueBooking = async (bookingId: string) => {
     throw new ApiError(httpStatus.NOT_FOUND, "Venue booking not found!");
   }
 
-  const result = await prisma.venue_booking.delete({
+  // Soft delete: change status to CANCELLED instead of hard deleting
+  const result = await prisma.venue_booking.update({
     where: { id: bookingId },
+    data: { bookingStatus: BookingStatus.CANCELLED },
   });
 
   return result;
@@ -697,5 +850,7 @@ export const VenueBookingService = {
   getVendorVenueBookings,
   getSingleVenueBooking,
   updateVenueBooking,
+  acceptVenueBooking,
+  rejectVenueBooking,
   deleteVenueBooking,
 };

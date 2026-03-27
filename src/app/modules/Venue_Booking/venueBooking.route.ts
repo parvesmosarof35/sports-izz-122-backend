@@ -42,6 +42,18 @@ router.patch(
   VenueBookingController.updateVenueBooking
 );
 
+router.post(
+  "/:bookingId/accept",
+  auth(UserRole.VENDOR),
+  VenueBookingController.acceptBooking
+);
+
+router.post(
+  "/:bookingId/reject",
+  auth(UserRole.VENDOR),
+  VenueBookingController.rejectBooking
+);
+
 router.delete(
   "/:bookingId",
   auth(UserRole.ADMIN),

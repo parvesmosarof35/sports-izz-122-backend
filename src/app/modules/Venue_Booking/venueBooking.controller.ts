@@ -121,7 +121,6 @@ const updateVenueBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-
 // delete venue booking (admin only)
 const deleteVenueBooking = catchAsync(async (req: Request, res: Response) => {
   const { bookingId } = req.params;
@@ -136,6 +135,42 @@ const deleteVenueBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// accept booking
+const acceptBooking = catchAsync(async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  const vendorId = req.user?.id;
+
+  const result = await VenueBookingService.acceptVenueBooking(
+    bookingId,
+    vendorId!
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Booking accepted successfully!",
+    data: result,
+  });
+});
+
+// reject booking
+const rejectBooking = catchAsync(async (req: Request, res: Response) => {
+  const { bookingId } = req.params;
+  const vendorId = req.user?.id;
+
+  const result = await VenueBookingService.rejectVenueBooking(
+    bookingId,
+    vendorId!
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Booking rejected successfully!",
+    data: result,
+  });
+});
+
 export const VenueBookingController = {
   createVenueBooking,
   getMyVenueBookings,
@@ -143,4 +178,6 @@ export const VenueBookingController = {
   getSingleVenueBooking,
   updateVenueBooking,
   deleteVenueBooking,
+  acceptBooking,
+  rejectBooking,
 };

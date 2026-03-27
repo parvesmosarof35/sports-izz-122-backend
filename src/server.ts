@@ -52,12 +52,15 @@ function installHeartbeat(wss: WebSocketServer) {
   wss.on("close", () => clearInterval(interval));
 }
 
+import { CronJobs } from "./app/jobs/cronJobs";
+
 async function main() {
   server = app.listen(config.port, () => {
     console.log("Server is running on port http://localhost:%d", config.port);
   });
 
   // start cron jobs
+  CronJobs.startBookingCleanupJob();
 
   wss = new WebSocketServer({ server });
   installHeartbeat(wss);

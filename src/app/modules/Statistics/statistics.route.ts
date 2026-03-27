@@ -12,6 +12,13 @@ router.get(
   StatisticsController.getOverview
 );
 
+// vendor earnings and trends
+router.get(
+  "/vendor-earnings",
+  auth(UserRole.VENDOR),
+  StatisticsController.getVendorTotalEarningsAndTrends
+);
+
 // // partner total earings hotel
 // router.get(
 //   "/earnings-hotel",

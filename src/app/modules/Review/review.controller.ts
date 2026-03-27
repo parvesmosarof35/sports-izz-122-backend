@@ -7,11 +7,12 @@ import httpStatus from "http-status";
 // create venue review
 const createVenueReview = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user?.id;
-  const { venueId, rating, comment } = req.body;
+  const { venueId, bookingId, rating, comment } = req.body;
 
   const result = await ReviewService.createVenueReview(
     userId,
     venueId,
+    bookingId,
     rating,
     comment
   );
@@ -23,6 +24,20 @@ const createVenueReview = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+// get reviews by venue
+const getReviewsByVenueId = catchAsync(async (req: Request, res: Response) => {
+  const { venueId } = req.params;
+  const result = await ReviewService.getReviewsByVenueId(venueId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Venue reviews retrieved successfully!",
+    data: result,
+  });
+});
+
 export const ReviewController = {
   createVenueReview,
+  getReviewsByVenueId,
 };

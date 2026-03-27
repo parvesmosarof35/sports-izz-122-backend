@@ -73,8 +73,27 @@ const getOverview = catchAsync(async (req: Request, res: Response) => {
 //   });
 // });
 
+// vendor total earnings and trends
+const getVendorTotalEarningsAndTrends = catchAsync(async (req: Request, res: Response) => {
+  const vendorId = req.user?.id;
+  const { year } = req.query;
+
+  const result = await StatisticsService.getVendorTotalEarningsAndTrends(
+    vendorId,
+    year as string
+  );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Vendor earnings and trends fetched successfully",
+    data: result,
+  });
+});
+
 export const StatisticsController = {
   getOverview,
+  getVendorTotalEarningsAndTrends,
   // sales
   // getPartnerTotalEarningsHotel,
   // getServiceProviderTotalEarningsService,

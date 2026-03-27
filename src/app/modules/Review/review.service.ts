@@ -8,9 +8,40 @@ import { GamificationService } from "../Gamification/gamification.service";
 const createVenueReview = async (
   userId: string,
   venueId: string,
+  venueBookingId: string,
   rating: number,
   comment?: string
 ): Promise<Review> => {
+  // check if review already exists for this booking
+  const existingReview = await prisma.review.findUnique({
+    where: {
+      venueBookingId,
+    },
+  });
+
+  if (existingReview) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      "A review already exists for this booking"
+    );
+  }
+
+  // check if booking exists and belongs to user
+  const booking = await prisma.venue_booking.findUnique({
+    where: { id: venueBookingId },
+  });
+
+  if (!booking) {
+    throw new ApiError(httpStatus.NOT_FOUND, "Booking not found");
+  }
+
+  if (booking.userId !== userId) {
+    throw new ApiError(
+      httpStatus.FORBIDDEN,
+      "You are not authorized to review this booking"
+    );
+  }
+
   // find user
   const user = await prisma.user.findUnique({
     where: { id: userId },
@@ -23,6 +54,7 @@ const createVenueReview = async (
     data: {
       userId: user.id,
       venueId,
+      venueBookingId,
       rating,
       comment,
     },
@@ -78,6 +110,30 @@ const createVenueReview = async (
   return review;
 };
 
+// get reviews by venue
+const getReviewsByVenueId = async (venueId: string) => {
+  const result = await prisma.review.findMany({
+    where: {
+      venueId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          fullName: true,
+          email: true,
+          contactNumber: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  return result;
+};
+
 export const ReviewService = {
   createVenueReview,
+  getReviewsByVenueId,
 };

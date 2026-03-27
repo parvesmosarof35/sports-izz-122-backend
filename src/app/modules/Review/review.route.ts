@@ -7,4 +7,7 @@ const router = express.Router();
 // create venue review
 router.post("/venue", auth(), ReviewController.createVenueReview);
 
+// get reviews by venue
+router.get("/venue/:venueId", ReviewController.getReviewsByVenueId);
+
 export const reviewRoute = router;
