@@ -15,7 +15,7 @@ router.get(
 // vendor earnings and trends
 router.get(
   "/vendor-earnings",
-  auth(UserRole.VENDOR),
+  auth(UserRole.VENDOR, UserRole.USER, UserRole.ADMIN, UserRole.SUPER_ADMIN),
   StatisticsController.getVendorTotalEarningsAndTrends
 );
 

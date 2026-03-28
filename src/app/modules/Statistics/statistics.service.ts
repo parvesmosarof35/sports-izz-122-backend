@@ -716,6 +716,9 @@ const getVendorTotalEarningsAndTrends = async (
     "Dec",
   ];
 
+  // set dummy earnings on march
+  const dummyEarnings = 5000;
+
   const earningsTrend = monthNames.map((month, index) => {
     const monthPayments = monthlyPayments.filter((payment) => {
       const paymentDate = new Date(payment.createdAt);
@@ -723,13 +726,22 @@ const getVendorTotalEarningsAndTrends = async (
     });
 
     const earnings = monthPayments.reduce((sum, payment) => {
-      const amountToAdd = payment.vendor_commission !== null ? payment.vendor_commission : payment.amount;
+      const amountToAdd =
+        payment.vendor_commission !== null
+          ? payment.vendor_commission
+          : payment.amount;
       return sum + (amountToAdd || 0);
     }, 0);
 
+    // Add dummy earnings for Jan, Feb, and March
+    const finalEarnings =
+      ["Jan", "Feb", "Mar"].includes(month)
+        ? earnings + dummyEarnings
+        : earnings;
+
     return {
       month,
-      earnings,
+      earnings: finalEarnings,
     };
   });
 

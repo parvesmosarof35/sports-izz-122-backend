@@ -3,6 +3,8 @@ import prisma from "../../../shared/prisma";
 import ApiError from "../../../errors/ApiErrors";
 import httpStatus from "http-status";
 import { GamificationService } from "../Gamification/gamification.service";
+import { IPaginationOptions } from "../../../interfaces/paginations";
+import { paginationHelpers } from "../../../helpars/paginationHelper";
 
 // create venue review
 const createVenueReview = async (
@@ -111,7 +113,12 @@ const createVenueReview = async (
 };
 
 // get reviews by venue
-const getReviewsByVenueId = async (venueId: string) => {
+const getReviewsByVenueId = async (
+  venueId: string,
+  options: IPaginationOptions
+) => {
+  const { limit, page, skip } = paginationHelpers.calculatedPagination(options);
+
   const result = await prisma.review.findMany({
     where: {
       venueId,
@@ -126,11 +133,27 @@ const getReviewsByVenueId = async (venueId: string) => {
         },
       },
     },
+    skip,
+    take: limit,
     orderBy: {
       createdAt: "desc",
     },
   });
-  return result;
+
+  const total = await prisma.review.count({
+    where: {
+      venueId,
+    },
+  });
+
+  return {
+    meta: {
+      total,
+      page,
+      limit,
+    },
+    data: result,
+  };
 };
 
 export const ReviewService = {

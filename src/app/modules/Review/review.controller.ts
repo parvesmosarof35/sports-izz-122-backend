@@ -3,6 +3,8 @@ import catchAsync from "../../../shared/catchAsync";
 import { ReviewService } from "./review.service";
 import sendResponse from "../../../shared/sendResponse";
 import httpStatus from "http-status";
+import { pick } from "../../../shared/pick";
+import { paginationFields } from "../../../constants/pagination";
 
 // create venue review
 const createVenueReview = catchAsync(async (req: Request, res: Response) => {
@@ -27,13 +29,15 @@ const createVenueReview = catchAsync(async (req: Request, res: Response) => {
 // get reviews by venue
 const getReviewsByVenueId = catchAsync(async (req: Request, res: Response) => {
   const { venueId } = req.params;
-  const result = await ReviewService.getReviewsByVenueId(venueId);
+  const options = pick(req.query, paginationFields);
+  const result = await ReviewService.getReviewsByVenueId(venueId, options);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: "Venue reviews retrieved successfully!",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
