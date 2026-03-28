@@ -490,20 +490,12 @@ const updateVenue = async (
   });
 
   if (!existingVenue) {
-    throw new Error(
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
       "Venue not found or you don't have permission to update it",
     );
   }
 
-  // process courtNumbers if provided
-  // const processedPayload = {
-  //   ...payload,
-  //   courtNumbers: payload.courtNumbers
-  //     ? Array.isArray(payload.courtNumbers)
-  //       ? payload.courtNumbers
-  //       : Array.from({ length: payload.courtNumbers }, (_, i) => i + 1)
-  //     : undefined,
-  // };
   // process courtNumbers if provided
   const processedPayload = {
     ...payload,
@@ -523,6 +515,8 @@ const updateVenue = async (
     venueStatus: payload.venueStatus
       ? String(payload.venueStatus) === "true"
       : undefined,
+    latitude: payload.latitude ? parseFloat(String(payload.latitude)) : undefined,
+    longitude: payload.longitude ? parseFloat(String(payload.longitude)) : undefined,
   };
 
   // separate time slots from basic venue data
@@ -594,45 +588,39 @@ const updateVenue = async (
 
       // venueAvailabilities update if provided
       if (venueAvailabilities && venueAvailabilities.length > 0) {
+        // Delete all existing availabilities and their slots for this venue
+        // First delete slots associated with availabilities
+        const existingAvailabilities = await tx.venueAvailability.findMany({
+          where: { venueId: venueId },
+          select: { id: true },
+        });
+
+        const availabilityIds = existingAvailabilities.map((a) => a.id);
+
+        if (availabilityIds.length > 0) {
+          await tx.scheduleSlot.deleteMany({
+            where: {
+              availableVenueId: { in: availabilityIds },
+            },
+          });
+        }
+
+        // Then delete the availabilities themselves
+        await tx.venueAvailability.deleteMany({
+          where: { venueId: venueId },
+        });
+
+        // Create new availabilities and slots
         for (const availability of venueAvailabilities) {
           const dayEnum = dayToWeekdayEnum[availability.day] || Weekday.MONDAY;
-
-          // check if availability already exists for this day
-          const existingAvailability = await tx.venueAvailability.findFirst({
-            where: {
-              venueId: venueId,
+          const venueAvailability = await tx.venueAvailability.create({
+            data: {
               day: dayEnum,
+              venueId: venueId,
             },
           });
 
-          if (existingAvailability) {
-            // delete existing schedule slots for this day
-            await tx.scheduleSlot.deleteMany({
-              where: {
-                availableVenueId: existingAvailability.id,
-              },
-            });
-
-            // create new schedule slots for existing availability
-            for (const slot of availability.scheduleSlots) {
-              await tx.scheduleSlot.create({
-                data: {
-                  from: slot.from,
-                  to: slot.to,
-                  venueId: venueId,
-                  availableVenueId: existingAvailability.id,
-                },
-              });
-            }
-          } else {
-            // create new availability and slots
-            const venueAvailability = await tx.venueAvailability.create({
-              data: {
-                day: dayEnum,
-                venueId: venueId,
-              },
-            });
-
+          if (availability.scheduleSlots && availability.scheduleSlots.length > 0) {
             for (const slot of availability.scheduleSlots) {
               await tx.scheduleSlot.create({
                 data: {

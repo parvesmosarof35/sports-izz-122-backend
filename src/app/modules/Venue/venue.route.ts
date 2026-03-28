@@ -29,7 +29,7 @@ router.get("/nearby-me", VenueController.getAllNearbyVenues);
 // get venue group by SportsType
 router.get("/group-by-sports-type", VenueController.getVenueGroupBySportsType);
 
-// get all my venues
+// get all my venues for vendor
 router.get("/my", auth(UserRole.VENDOR), VenueController.getAllMyVenues);
 
 // get single venue
@@ -41,8 +41,18 @@ router.patch(
   auth(UserRole.VENDOR),
   uploadFile.venueImage,
   parseBodyData,
-  // validateRequest(VenueValidation.updateVenueValidation),
+  validateRequest(VenueValidation.updateVenueValidation),
   VenueController.updateVenue
+);
+
+// update venue details like photo , name , price , capacity , location , lat, long , description amenities  courtNumbers venueAvailabilities this things shokuld be update able by the vendor and first check if he is the owner of the venue
+router.patch(
+  "/:venueId/update-venue-details",
+  auth(UserRole.VENDOR),
+  uploadFile.venueImage,
+  parseBodyData,
+  validateRequest(VenueValidation.updateVenueValidation),
+  VenueController.updateVenueDetails
 );
 
 // delete venue
